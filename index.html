@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Recetario de Ensaladas y Aderezos</title>
+  <title>Ensaladas & Bowls - Recetario PWA</title>
   
-  <!-- Soporte para PWA y Pantalla Completa en Móviles -->
+  <!-- Configuración PWA y Pantalla Completa Móvil -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ensaladas">
-  <meta name="theme-color" content="#166534">
+  <meta name="theme-color" content="#2d4527">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,25 +19,33 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              200: '#bbf7d0',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
+            olive: {
+              50: '#f4f7f2',
+              100: '#e5ece1',
+              200: '#ceddc7',
+              300: '#abc4a0',
+              600: '#527c44',
+              700: '#3f5e36',
+              800: '#2d4527',
+              900: '#1e301b',
+            },
+            warm: {
+              50: '#fdfbf7',
+              100: '#f9f6ee',
+              200: '#f1ebd8',
+              800: '#785b34',
+              900: '#4a3720',
             },
             dressing: {
-              50: '#fffbeb',
+              50: '#fffbf0',
               100: '#fef3c7',
-              500: '#f59e0b',
+              200: '#fde68a',
+              600: '#d97706',
               800: '#92400e',
             }
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
           }
         }
       }
@@ -45,227 +53,320 @@
   </script>
 
   <style>
-    /* Ocultar barra de scroll en contenedores horizontales */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    /* Ocultar barra de scroll en carruseles táctiles */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Ajuste de notch y safe areas en iPhone y Android */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 68px);
+      -webkit-tap-highlight-color: transparent;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+
+    .bottom-nav-safe {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
     }
-    /* Animación suave de apertura de modal */
-    @keyframes slideUp {
+
+    /* Animaciones suaves */
+    @keyframes slideSheet {
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
     }
-    .animate-slide-up {
-      animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    /* Estilo del notch y áreas seguras */
-    body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      -webkit-tap-highlight-color: transparent;
+    .animate-sheet {
+      animation: slideSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 </head>
-<body class="bg-stone-100 text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-200">
+<body class="bg-warm-50 text-stone-800 font-sans antialiased min-h-screen selection:bg-olive-200">
 
-  <!-- ENCABEZADO FIJO TIPO APP NATIVA -->
-  <header class="sticky top-0 z-30 bg-brand-800 text-white shadow-md">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+  <!-- CABECERA PRINCIPAL FIJA -->
+  <header class="sticky top-0 z-30 bg-olive-800 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 pt-3 pb-2 flex items-center justify-between">
       <div class="flex items-center space-x-2.5">
-        <span class="text-2xl">🥗</span>
+        <span class="text-2xl p-1 bg-olive-900/60 rounded-xl border border-olive-700/50">🥗</span>
         <div>
-          <h1 class="text-lg font-bold leading-tight tracking-tight">Ensaladas & Aderezos</h1>
-          <p id="recipe-counter" class="text-xs text-brand-200 font-medium">Cargando recetas...</p>
+          <h1 class="text-base sm:text-lg font-bold leading-tight tracking-tight text-warm-50">Ensaladas & Bowls</h1>
+          <p id="header-subtitle" class="text-[11px] text-olive-200 font-medium">Recetas frescas, aderezos & lista del súper</p>
         </div>
       </div>
       
-      <!-- Botón de Favoritos -->
-      <button id="btn-toggle-favs" class="relative bg-brand-900/60 active:scale-95 transition p-2.5 rounded-full border border-brand-700 flex items-center justify-center text-brand-100">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-        </svg>
-        <span id="favs-badge" class="absolute -top-1 -right-1 bg-amber-400 text-brand-950 text-[10px] font-bold px-1.5 py-0.2 rounded-full">0</span>
+      <!-- Contador rápido de favoritos -->
+      <button id="quick-favs-badge-btn" class="flex items-center space-x-1.5 bg-olive-900/80 px-2.5 py-1.5 rounded-full border border-olive-700 text-xs text-olive-100 active:scale-95 transition">
+        <span class="text-red-400">❤️</span>
+        <span id="nav-favs-count-badge" class="font-bold text-amber-300">0</span>
       </button>
     </div>
 
-    <!-- Buscador Reactivo -->
-    <div class="max-w-4xl mx-auto px-4 pb-3">
+    <!-- Buscador en tiempo real -->
+    <div class="max-w-4xl mx-auto px-4 pb-3 pt-1">
       <div class="relative">
         <input 
           type="search" 
           id="search-input" 
-          placeholder="Buscar ingrediente, proteína o nombre..." 
-          class="w-full bg-white/10 text-white placeholder-brand-200 text-sm pl-10 pr-9 py-2 rounded-xl border border-brand-600/60 focus:outline-none focus:bg-white focus:text-stone-900 focus:placeholder-stone-400 transition"
+          placeholder="Buscar ensalada, aderezo, ingrediente (pollo, pistaches...)" 
+          class="w-full bg-olive-900/50 text-white placeholder-olive-300 text-xs sm:text-sm pl-9 pr-9 py-2 rounded-xl border border-olive-700/70 focus:outline-none focus:bg-white focus:text-stone-900 focus:placeholder-stone-400 transition"
         >
-        <span class="absolute left-3 top-2.5 text-brand-300 pointer-events-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+        <span class="absolute left-3 top-2.5 text-olive-300 pointer-events-none">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         </span>
-        <button id="search-clear" class="hidden absolute right-3 top-2.5 text-brand-300 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-          </svg>
+        <button id="search-clear-btn" class="hidden absolute right-3 top-2.5 text-olive-300 hover:text-white">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- SECCIÓN DE FILTROS EN CHIPS HORIZONTALES -->
-  <section class="bg-white border-b border-stone-200 shadow-xs sticky top-[108px] z-20">
-    <div class="max-w-4xl mx-auto px-4 py-2 space-y-2">
+  <!-- CONTROLES DE FILTROS EN CHIPS HORIZONTALES (Visible en vista Explorar) -->
+  <section id="filters-container" class="bg-white border-b border-stone-200/80 shadow-xs sticky top-[98px] z-20">
+    <div class="max-w-4xl mx-auto px-4 py-2 space-y-1.5">
       
-      <!-- Fila 1: Filtro por Estación -->
+      <!-- Fila 1: Proteína -->
       <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-stone-400 pl-1 shrink-0">Época:</span>
-        <div id="season-filters" class="flex items-center space-x-1.5 shrink-0">
-          <button data-season="Todas" class="season-chip active bg-brand-800 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-xs transition">Todas</button>
-          <button data-season="Primavera" class="season-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🌸 Primavera</button>
-          <button data-season="Verano" class="season-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">☀️ Verano</button>
-          <button data-season="Otoño" class="season-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🍁 Otoño</button>
-          <button data-season="Invierno" class="season-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">❄️ Invierno</button>
-          <button data-season="Todo el año" class="season-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🌱 Todo el año</button>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 pl-0.5 shrink-0">Proteína:</span>
+        <div id="protein-chips" class="flex items-center space-x-1.5 shrink-0">
+          <button data-protein="Todas" class="chip active bg-olive-800 text-white text-xs font-semibold px-3 py-1 rounded-full transition">Todas</button>
+          <button data-protein="Pollo" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🍗 Pollo</button>
+          <button data-protein="Atún/Pescado" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🐟 Atún/Pescado</button>
+          <button data-protein="Garbanzo/Legumbres" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🧆 Garbanzo/Legumbres</button>
+          <button data-protein="Pasta" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🍝 Pasta</button>
+          <button data-protein="Queso/Semillas" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🧀 Queso/Semillas</button>
+          <button data-protein="Vegetariana" class="chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🥑 Vegetariana</button>
         </div>
       </div>
 
-      <!-- Fila 2: Filtro por Proteína / Base -->
+      <!-- Fila 2: Tendencias y Temporadas -->
       <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-        <span class="text-[11px] font-bold uppercase tracking-wider text-stone-400 pl-1 shrink-0">Base:</span>
-        <div id="protein-filters" class="flex items-center space-x-1.5 shrink-0">
-          <button data-protein="Todas" class="protein-chip active bg-stone-800 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-xs transition">Todas</button>
-          <button data-protein="Pollo" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🍗 Pollo</button>
-          <button data-protein="Atún/Pescado" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🐟 Atún/Pescado</button>
-          <button data-protein="Garbanzo/Legumbre" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🧆 Garbanzo/Legumbre</button>
-          <button data-protein="Pasta" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🍝 Pasta</button>
-          <button data-protein="Queso" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🧀 Queso</button>
-          <button data-protein="Germen/Semillas" class="protein-chip bg-stone-100 text-stone-600 hover:bg-stone-200 text-xs font-medium px-3 py-1 rounded-full transition">🌱 Germen/Semillas</button>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 pl-0.5 shrink-0">Origen / Época:</span>
+        <div id="theme-chips" class="flex items-center space-x-1.5 shrink-0">
+          <button data-theme="Todas" class="theme-chip active bg-warm-800 text-white text-xs font-semibold px-3 py-1 rounded-full transition">Cualquiera</button>
+          <button data-theme="Viral" class="theme-chip bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs px-3 py-1 rounded-full transition">🔥 Virales TikTok/YT</button>
+          <button data-theme="Bajio" class="theme-chip bg-emerald-100 text-emerald-900 hover:bg-emerald-200 text-xs px-3 py-1 rounded-full transition">🇲🇽 Bajío/Regional</button>
+          <button data-theme="Primavera" class="theme-chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🌸 Primavera</button>
+          <button data-theme="Verano" class="theme-chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">☀️ Verano</button>
+          <button data-theme="Otoño" class="theme-chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">🍁 Otoño</button>
+          <button data-theme="Invierno" class="theme-chip bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-3 py-1 rounded-full transition">❄️ Invierno</button>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- CONTENEDOR PRINCIPAL: CATÁLOGO DE TARJETAS -->
-  <main class="flex-1 max-w-4xl w-full mx-auto p-4">
-    <div id="empty-state" class="hidden text-center py-16 px-4">
-      <div class="text-5xl mb-3">🥣</div>
-      <h3 class="text-base font-semibold text-stone-700">No encontramos recetas con esos criterios</h3>
-      <p class="text-xs text-stone-500 mt-1 max-w-xs mx-auto">Intenta borrar palabras de búsqueda o cambiar los filtros de estación o proteína.</p>
-      <button id="btn-reset-filters" class="mt-4 bg-brand-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xs">Restablecer filtros</button>
-    </div>
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-4xl mx-auto p-4 flex-1 w-full">
+    
+    <!-- VISTA 1: EXPLORAR (CATÁLOGO GENERAL) -->
+    <section id="view-explore">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <span id="results-count" class="text-xs font-semibold text-stone-500">Cargando recetas...</span>
+        <button id="btn-clear-all-filters" class="hidden text-xs text-olive-700 hover:underline font-semibold">Limpiar filtros</button>
+      </div>
 
-    <!-- Rejilla de recetas -->
-    <div id="recipes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-      <!-- Inserción dinámica vía JavaScript -->
-    </div>
+      <!-- Estado vacío -->
+      <div id="empty-state" class="hidden text-center py-16 px-4 bg-white rounded-3xl border border-stone-200/80">
+        <div class="text-5xl mb-2">🥣</div>
+        <h3 class="text-sm font-bold text-stone-800">No encontramos recetas con esos criterios</h3>
+        <p class="text-xs text-stone-500 mt-1 max-w-xs mx-auto">Prueba quitando filtros o buscando ingredientes más comunes como aguacate, pollo o limón.</p>
+        <button id="btn-reset-empty" class="mt-4 bg-olive-700 text-white text-xs font-bold px-4 py-2 rounded-xl">Ver todas las recetas</button>
+      </div>
+
+      <!-- Rejilla de recetas -->
+      <div id="recipes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Tarjetas dinámicas -->
+      </div>
+    </section>
+
+    <!-- VISTA 2: FAVORITAS -->
+    <section id="view-favorites" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-olive-900">Tus Ensaladas Favoritas ❤️</h2>
+        <p class="text-xs text-stone-500">Recetas que has guardado para consultar en cualquier momento.</p>
+      </div>
+      <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Tarjetas favoritas -->
+      </div>
+      <div id="favorites-empty" class="hidden text-center py-16 px-4 bg-white rounded-3xl border border-stone-200/80">
+        <div class="text-5xl mb-2">💚</div>
+        <h3 class="text-sm font-bold text-stone-800">Aún no tienes recetas favoritas</h3>
+        <p class="text-xs text-stone-500 mt-1 max-w-xs mx-auto">Toca el corazón en cualquier tarjeta para guardarla en esta sección.</p>
+        <button onclick="switchTab('explore')" class="mt-4 bg-olive-700 text-white text-xs font-bold px-4 py-2 rounded-xl">Explorar recetas</button>
+      </div>
+    </section>
+
+    <!-- VISTA 3: LISTA DEL SÚPER (COMPRAS CONSOLIDADAS) -->
+    <section id="view-grocery" class="hidden">
+      <div class="bg-white rounded-3xl p-4 sm:p-6 border border-stone-200/80 shadow-xs mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-bold text-olive-900 flex items-center space-x-1.5">
+              <span>🛒</span>
+              <span>Lista de Compras del Súper</span>
+            </h2>
+            <p class="text-xs text-stone-500">Agrega ingredientes desde cualquier receta o anota tus propios pendientes.</p>
+          </div>
+          <button id="btn-clear-grocery" class="text-xs text-red-600 font-semibold hover:underline">Vaciar lista</button>
+        </div>
+
+        <!-- Entrada rápida de nuevo ingrediente -->
+        <div class="flex space-x-2 mb-4">
+          <input 
+            type="text" 
+            id="grocery-custom-input" 
+            placeholder="Añadir producto (ej. 2 aguacates hass, aceite de oliva...)" 
+            class="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:bg-white focus:border-olive-600"
+          >
+          <button id="btn-add-custom-grocery" class="bg-olive-700 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm active:scale-95 transition">Agregar</button>
+        </div>
+
+        <!-- Lista activa de compras -->
+        <ul id="grocery-items-list" class="divide-y divide-stone-100 text-xs sm:text-sm">
+          <!-- Items dinámicos con tachado -->
+        </ul>
+
+        <div id="grocery-empty" class="hidden text-center py-10">
+          <span class="text-4xl">🥬</span>
+          <p class="text-xs text-stone-500 mt-2 font-medium">Tu lista del súper está vacía.<br>Abre cualquier ensalada y presiona <b>«Añadir al Súper»</b> para cargar sus ingredientes.</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- MODAL DE RECETA Y ADEREZO (BOTTOM SHEET / FULLSCREEN MÓVIL) -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR ESTILO APP NATIVA -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 bottom-nav-safe">
+    <div class="max-w-md mx-auto grid grid-cols-3 py-1.5 text-center">
+      
+      <button onclick="switchTab('explore')" id="tab-btn-explore" class="tab-btn flex flex-col items-center py-1 text-olive-800 font-bold active:scale-90 transition">
+        <span class="text-xl">🥗</span>
+        <span class="text-[10px] mt-0.5">Explorar</span>
+      </button>
+
+      <button onclick="switchTab('favorites')" id="tab-btn-favorites" class="tab-btn flex flex-col items-center py-1 text-stone-400 font-medium hover:text-stone-700 active:scale-90 transition relative">
+        <span class="text-xl">❤️</span>
+        <span class="text-[10px] mt-0.5">Favoritas</span>
+        <span id="tab-favs-badge" class="hidden absolute top-0.5 right-6 bg-red-500 text-white text-[9px] font-bold px-1 rounded-full">0</span>
+      </button>
+
+      <button onclick="switchTab('grocery')" id="tab-btn-grocery" class="tab-btn flex flex-col items-center py-1 text-stone-400 font-medium hover:text-stone-700 active:scale-90 transition relative">
+        <span class="text-xl">🛒</span>
+        <span class="text-[10px] mt-0.5">Mi Súper</span>
+        <span id="tab-grocery-badge" class="hidden absolute top-0.5 right-6 bg-olive-700 text-white text-[9px] font-bold px-1 rounded-full">0</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- MODAL / BOTTOM SHEET DE DETALLE DE RECETA -->
   <div id="recipe-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 hidden opacity-0 transition-opacity duration-200">
-    <div id="modal-card" class="bg-white w-full sm:max-w-xl max-h-[92vh] sm:max-h-[85vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl transform translate-y-full transition-transform duration-300">
+    <div id="modal-card" class="bg-white w-full sm:max-w-xl max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl transform translate-y-full transition-transform duration-300">
       
       <!-- Barra superior de la tarjeta modal -->
-      <div class="p-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between sticky top-0 z-10">
-        <div class="flex items-center space-x-2">
-          <span id="modal-icon" class="text-2xl">🥗</span>
-          <div>
-            <span id="modal-season-badge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-100 text-brand-800">Estación</span>
-            <span id="modal-protein-badge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 ml-1">Proteína</span>
+      <div class="px-5 py-3.5 bg-warm-50 border-b border-stone-200 flex items-center justify-between sticky top-0 z-10">
+        <div class="flex items-center space-x-2 truncate">
+          <span id="modal-icon" class="text-2xl p-1 bg-white rounded-xl shadow-xs border border-stone-200">🥗</span>
+          <div class="truncate">
+            <span id="modal-theme-badge" class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">Tendencia</span>
+            <span id="modal-protein-badge" class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-olive-100 text-olive-900 ml-1">Proteína</span>
           </div>
         </div>
         
-        <div class="flex items-center space-x-1.5">
-          <button id="modal-fav-btn" class="p-2 rounded-full hover:bg-stone-200 active:scale-90 text-stone-400 transition" title="Guardar en favoritos">
-            <svg id="modal-fav-icon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="flex items-center space-x-2">
+          <button id="modal-fav-btn" class="p-2 rounded-full hover:bg-stone-200 active:scale-90 text-stone-400 transition" title="Favorito">
+            <svg id="modal-fav-icon" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
           <button id="modal-close-btn" class="p-2 rounded-full bg-stone-200 hover:bg-stone-300 active:scale-90 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-stone-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-5 h-5 text-stone-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
 
-      <!-- Contenido scrolleable de la receta -->
+      <!-- Contenido de la receta -->
       <div class="p-5 overflow-y-auto space-y-5 text-stone-800 text-sm">
         
-        <!-- Título y métricas -->
+        <!-- Nombre y métricas -->
         <div>
-          <h2 id="modal-title" class="text-xl font-bold text-stone-900 leading-snug">Nombre de la Ensalada</h2>
-          <div class="flex items-center space-x-4 mt-2 text-xs text-stone-500 font-medium">
+          <h2 id="modal-title" class="text-lg sm:text-xl font-bold text-stone-900 leading-snug">Nombre de la Ensalada</h2>
+          <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-stone-500 font-medium">
             <span class="flex items-center space-x-1">
-              <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <span id="modal-time">20 min</span>
             </span>
             <span class="flex items-center space-x-1">
-              <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               <span id="modal-servings">4 porciones</span>
             </span>
+            <span class="flex items-center space-x-1 text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">
+              <span id="modal-cost">Económico</span>
+            </span>
+            <span id="modal-season-tag" class="text-stone-400">Todo el año</span>
           </div>
         </div>
 
-        <!-- SECCIÓN 1: INGREDIENTES CON CASILLAS DE COMPRA -->
-        <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200/80">
-          <div class="flex items-center justify-between mb-2.5">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-stone-600 flex items-center space-x-1.5">
-              <span>🛒</span>
+        <!-- Botón para transferir ingredientes al Súper -->
+        <button id="btn-add-recipe-to-grocery" class="w-full bg-olive-700 hover:bg-olive-800 active:scale-98 text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center space-x-2 transition shadow-xs">
+          <span>🛒</span>
+          <span>Añadir todos los ingredientes a mi Lista del Súper</span>
+        </button>
+
+        <!-- SECCIÓN 1: INGREDIENTES BASE CON CHECKBOXES -->
+        <div class="bg-warm-100/70 rounded-2xl p-4 border border-warm-200">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center space-x-1">
+              <span>🥑</span>
               <span>Ingredientes Base (Toca para tachar)</span>
             </h3>
-            <span class="text-[11px] text-stone-400 font-medium">Lista de compra</span>
+            <span class="text-[10px] text-stone-400 font-medium">Checklist</span>
           </div>
-          <ul id="modal-ingredients-list" class="space-y-2">
-            <!-- Items interactivos con checkbox -->
+          <ul id="modal-ingredients-list" class="space-y-1.5">
+            <!-- Ingredientes con tachado interactivo -->
           </ul>
         </div>
 
         <!-- SECCIÓN 2: TARJETA DESTACADA DEL ADEREZO -->
-        <div class="bg-dressing-50 rounded-2xl p-4 border border-dressing-500/30 shadow-xs relative overflow-hidden">
+        <div class="bg-dressing-50 rounded-2xl p-4 border border-dressing-600/30 shadow-xs relative overflow-hidden">
           <div class="flex items-center space-x-2 text-dressing-800 mb-2">
-            <span class="text-xl">🫙</span>
+            <span class="text-2xl">🫙</span>
             <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-dressing-800">Fórmula del Aderezo Casero</h3>
-              <p id="modal-dressing-name" class="font-bold text-sm text-stone-900 leading-none">Vinagreta de Limón y Mostaza</p>
+              <h3 class="text-[10px] font-bold uppercase tracking-wider text-dressing-800">Fórmula del Aderezo Casero</h3>
+              <p id="modal-dressing-name" class="font-bold text-sm text-stone-900 leading-tight">Nombre del Aderezo</p>
             </div>
           </div>
           
-          <div class="mt-3 bg-white/80 backdrop-blur-xs p-3 rounded-xl border border-dressing-500/20">
-            <p class="text-xs font-semibold text-stone-700 mb-1">Ingredientes del aderezo:</p>
+          <div class="mt-2.5 bg-white/90 p-3 rounded-xl border border-dressing-200">
+            <p class="text-[11px] font-bold text-stone-700 mb-1">Ingredientes requeridos:</p>
             <ul id="modal-dressing-ingredients" class="list-disc list-inside text-xs text-stone-700 space-y-0.5">
               <!-- Ingredientes de aderezo -->
             </ul>
           </div>
 
           <div class="mt-2.5">
-            <p class="text-xs font-semibold text-dressing-800 mb-0.5">Método de emulsión:</p>
-            <p id="modal-dressing-prep" class="text-xs text-stone-700 leading-relaxed bg-white/50 p-2.5 rounded-lg border border-dressing-500/10">
-              Batir enérgicamente en frasco cerrado...
+            <p class="text-[11px] font-bold text-dressing-800 mb-0.5">Técnica de emulsión / mezclado:</p>
+            <p id="modal-dressing-prep" class="text-xs text-stone-700 leading-relaxed bg-white/60 p-2.5 rounded-lg border border-dressing-100">
+              Método de preparación...
             </p>
           </div>
         </div>
 
         <!-- SECCIÓN 3: PREPARACIÓN PASO A PASO -->
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-stone-600 flex items-center space-x-1.5 mb-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center space-x-1.5 mb-2.5">
             <span>👨‍🍳</span>
-            <span>Pasos de Elaboración</span>
+            <span>Montaje & Preparación</span>
           </h3>
-          <ol id="modal-prep-steps" class="space-y-3">
+          <ol id="modal-prep-steps" class="space-y-2.5">
             <!-- Pasos numerados -->
           </ol>
         </div>
 
-        <!-- Botón de compartir o copiar receta -->
+        <!-- Botón para compartir o copiar receta -->
         <div class="pt-2">
           <button id="btn-copy-recipe" class="w-full py-2.5 bg-stone-100 hover:bg-stone-200 active:scale-98 text-stone-700 font-semibold text-xs rounded-xl border border-stone-300 flex items-center justify-center space-x-2 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-            </svg>
-            <span>Copiar texto de la receta al portapapeles</span>
+            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span>Copiar receta completa al portapapeles</span>
           </button>
         </div>
 
@@ -274,345 +375,1131 @@
   </div>
 
   <!-- TOAST NOTIFICACIÓN FLOTANTE -->
-  <div id="toast-msg" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 backdrop-blur-md text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg border border-stone-700 pointer-events-none opacity-0 transition-opacity duration-300">
+  <div id="toast-msg" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 backdrop-blur-md text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg border border-stone-700 pointer-events-none opacity-0 transition-opacity duration-300">
     Mensaje
   </div>
 
-  <!-- JAVASCRIPT: DATOS, LOGICA REACTIVA Y SOPORTE PWA -->
+  <!-- JAVASCRIPT: BASE DE DATOS MASIVA DE 50+ RECETAS Y LÓGICA DE LA APP -->
   <script>
     /* ==========================================================================
-       1. BASE DE DATOS ESTRUCTURADA DE RECETAS (JSON INTEGRADO)
+       BASE DE DATOS: 52 RECETAS COMPLETAS Y DETALLADAS
        ========================================================================== */
     const RECETAS_DB = [
+      // --- BLOQUE 1: TENDENCIAS VIRALES Y REDES SOCIALES ---
       {
-        id: "ens-01",
-        nombre: "Fresas de Irapuato con Pollo Asado y Queso de Rancho",
-        categoria: "Estacional del Bajío",
-        icono: "🍓",
-        estacion: "Primavera",
-        proteina: "Pollo",
-        tiempo: "20 min",
+        id: "viral-01",
+        nombre: "Ensalada Jennifer Aniston Viral",
+        categoria: "Tendencia Viral",
+        icono: "✨",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Todo el año",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "15 min",
         porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "250 g de pechuga de pollo asada en fajitas templadas",
-          "1.5 tazas de fresas frescas de Irapuato desinfectadas y rebanadas",
-          "4 tazas de espinaca tierna lavada y escurrida",
-          "80 g de queso fresco de rancho desmoronado",
-          "1/3 taza de cacahuates tostados sin sal"
+          "2 tazas de quinoa o trigo bulgur cocido y frío",
+          "1.5 tazas de garbanzos cocidos y bien escurridos",
+          "1 taza de pepino persa cortado en cubitos pequeños",
+          "1/2 taza de queso feta o panela desmoronado",
+          "1/2 taza de pistaches pelados tostados y picados",
+          "1/2 taza de perejil fresco finamente picado",
+          "1/3 taza de menta fresca finamente picada",
+          "1/3 taza de cebolla morada en brunoise fino"
         ],
         aderezo: {
-          nombre: "Vinagreta de Miel de Abeja y Limón Agrio",
+          nombre: "Vinagreta de Limón Amarillo y Oliva Virgen",
           ingredientes: [
-            "4 cdas. de aceite vegetal neutro o de oliva",
-            "2 cdas. de jugo de limón verde fresco",
-            "1.5 cdas. de miel de abeja pura",
-            "1 pizca de sal de grano y pimienta negra"
+            "5 cdas. de aceite de oliva virgen extra",
+            "Jugo de 1.5 limones amarillos colados",
+            "1 pizca de ajo rallado",
+            "Sal de mar y pimienta negra molida"
           ],
-          preparacion: "Colocar todos los ingredientes en un frasco con tapa hermética y agitar con vigor durante 30 segundos hasta conseguir una emulsión brillante y espesa."
+          preparacion: "Batir enérgicamente en un tazón el jugo de limón con la sal y pimienta. Añadir el aceite en hilo hasta que adquiera consistencia brillante y ligeramente emulsionada."
         },
         preparacion: [
-          "Sellar y dorar la pechuga de pollo a la plancha con una pizca de sal; cortar en fajitas.",
-          "Secar muy bien las hojas de espinaca con paño limpio para que el aderezo se adhiera adecuadamente.",
-          "Disponer las espinacas en una ensaladera amplia y bañar con la mitad de la vinagreta recién agitada.",
-          "Montar encima las fajitas de pollo, las rebanadas de fresa y el queso fresco de rancho.",
-          "Terminar rociando el resto del aderezo y espolvorear los cacahuates tostados para aportar crocancia."
+          "Enjuagar y escurrir perfectamente los garbanzos y el grano cocido para que no aporten humedad excesiva.",
+          "En una ensaladera grande combinar la quinoa/bulgur, los garbanzos, el pepino y la cebolla morada.",
+          "Incorporar la menta y el perejil frescos picados.",
+          "Verter la vinagreta de limón y revolver de forma envolvente durante un minuto para integrar sabores.",
+          "Terminar añadiendo el queso feta desmoronado y los pistaches picados para conservar su textura crujiente."
         ]
       },
       {
-        id: "ens-02",
-        nombre: "Nopales Curados al Limón con Atún y Aguacate",
-        categoria: "Milpa y Costera",
-        icono: "🌵",
-        estacion: "Primavera",
-        proteina: "Atún/Pescado",
-        tiempo: "15 min",
-        porciones: "3 porciones",
+        id: "viral-02",
+        nombre: "Green Goddess Salad Viral (Baked by Melissa)",
+        categoria: "Tendencia Viral",
+        icono: "🥬",
+        proteina: "Vegetariana",
+        estacion: "Todo el año",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "18 min",
+        porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "4 pencas de nopal tierno en tiritas (curados en sal, sin baba)",
-          "2 latas de atún en agua bien drenadas",
-          "1 aguacate maduro en cubos regulares",
-          "2 jitomates saladette en cubos sin semillas",
-          "1/4 cebolla morada picada finamente",
+          "3 tazas de col blanca finamente picada en cubitos mínimos",
+          "2 pepinos persas o criollos finamente picados",
+          "1/2 taza de cebollín o cebolla verde picada",
+          "1/4 taza de cebollino fresco picado"
+        ],
+        aderezo: {
+          nombre: "Aderezo Cremoso Verde de Espinaca y Nuez",
+          ingredientes: [
+            "1 taza de hojas de espinaca tierna lavada",
+            "1 taza de hojas de albahaca fresca",
+            "2 dientes de ajo",
+            "1/3 taza de nueces de castilla o nuez de la India",
+            "Jugo de 2 limones amarillos grandes",
+            "1/3 taza de aceite de oliva virgen extra",
+            "2 cdas. de levadura nutricional o queso parmesano rallado",
+            "1 cdta. de sal de grano"
+          ],
+          preparacion: "Licuar a potencia alta todos los ingredientes hasta lograr una crema verde densa, sedosa y uniforme. Si queda muy espesa, aligerar con 1 o 2 cucharadas de agua tibia."
+        },
+        preparacion: [
+          "Picar la col y los pepinos tan finos que tengan el tamaño de granos de maíz (tipo chopped salad).",
+          "Colocar los vegetales picados en un bowl hondo.",
+          "Verter todo el aderezo Green Goddess sobre los vegetales.",
+          "Revolver intensamente hasta que cada trocito de col quede teñido de verde esmeralda brillante.",
+          "Servir con totopos de maíz o comer directamente con cuchara."
+        ]
+      },
+      {
+        id: "viral-03",
+        nombre: "Grinder Chopped Salad Viral de TikTok",
+        categoria: "Tendencia Viral",
+        icono: "🥖",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "15 min",
+        porciones: "3-4 porciones",
+        ingredientes: [
+          "3 tazas de lechuga iceberg o romana picada finísima a cuchillo",
+          "150 g de pechuga de pavo o pollo en cubitos",
+          "1/2 taza de queso provolone o manchego en tiritas",
+          "1/3 taza de pimientos pepperoncini o chiles güeros encurtidos picados",
+          "1/4 cebolla morada en juliana fina",
+          "1 taza de jitomates cherry en cuartos"
+        ],
+        aderezo: {
+          nombre: "Aderezo Grinder Cremoso Italiano",
+          ingredientes: [
+            "4 cdas. de mayonesa",
+            "1.5 cdas. del vinagre de los pepperoncini encurtidos",
+            "1 cdta. de orégano seco molido",
+            "1/2 cdta. de ajo machacado en pasta",
+            "1 cdta. de queso parmesano rallado",
+            "Pizca de sal y hojuelas de chile seco"
+          ],
+          preparacion: "Mezclar en un tazón la mayonesa con el vinagre del encurtido, orégano, ajo y parmesano hasta obtener una salsa espesa y aromática."
+        },
+        preparacion: [
+          "Picar en tabla todos los ingredientes de la ensalada de manera que queden trozos uniformes.",
+          "En un cuenco mezclar la lechuga picada con el aderezo Grinder.",
+          "Añadir el pollo o pavo, el queso provolone, los pepperoncini y los jitomates.",
+          "Mezclar bien y disfrutar sola o usarla como relleno de un pan rústico o baguette."
+        ]
+      },
+      {
+        id: "viral-04",
+        nombre: "Ensalada Viral de Pepino Estilo Logan Moffitt",
+        categoria: "Tendencia Viral",
+        icono: "🥒",
+        proteina: "Queso/Semillas",
+        estacion: "Verano",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "8 min",
+        porciones: "2 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2 pepinos medianos cortados en rodajas ultrafinas con mandolina",
+          "1 cda. de semillas de ajonjolí tostado blanco y negro",
+          "2 cebollines rebanados al sesgo",
+          "1 diente de ajo rallado fino",
+          "1/4 taza de queso crema o tofu suave (opcional para versión creamy)"
+        ],
+        aderezo: {
+          nombre: "Salsa de Sésamo, Soya y Aceite Picante",
+          ingredientes: [
+            "2 cdas. de salsa de soya clara",
+            "1 cda. de aceite de ajonjolí tostado",
+            "1 cda. de vinagre de arroz",
+            "1 cdta. de chile crujiente en aceite (chili crisp)",
+            "1 pizca de azúcar o miel"
+          ],
+          preparacion: "Mezclar los líquidos directamente dentro de un contenedor o frasco hermético hasta disolver el azúcar."
+        },
+        preparacion: [
+          "Colocar las rodajas de pepino en un tupper hermético o frasco grande con tapa.",
+          "Verter los ingredientes del aderezo, el ajo y el cebollín.",
+          "Cerrar la tapa con firmeza y agitar con vigor durante 20 segundos hasta que el pepino libere jugo y se impregne.",
+          "Abrir, espolvorear ajonjolí tostado y consumir inmediatamente supercrocante."
+        ]
+      },
+      {
+        id: "viral-05",
+        nombre: "Thai Crunch Salad con Aderezo de Cacahuate",
+        categoria: "Tendencia Viral",
+        icono: "🥜",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "2 tazas de col morada en juliana fina",
+          "2 tazas de col blanca o napa finamente cortada",
+          "1.5 tazas de pechuga de pollo cocida deshebrada",
+          "1 zanahoria grande en bastoncitos finos",
+          "1 taza de edamames cocidos desvainados",
+          "1/2 taza de cacahuates tostados partidos",
           "1/3 taza de hojas de cilantro fresco"
         ],
         aderezo: {
-          nombre: "Aliño Cítrico con Orégano Silvestre",
+          nombre: "Salsa Cremosa Thai de Crema de Cacahuate",
           ingredientes: [
-            "4 cdas. de aceite de maíz o canola",
-            "Jugo colado de 2 limones agrios grandes",
-            "1 cdta. de orégano seco quebrado entre las manos",
-            "Sal de mar al gusto"
+            "3 cdas. de crema de cacahuate sin azúcar",
+            "2 cdas. de agua tibia",
+            "1.5 cdas. de salsa de soya",
+            "1 cda. de jugo de lima o limón verde",
+            "1 cda. de miel de abeja",
+            "1/2 cdta. de jengibre fresco rallado"
           ],
-          preparacion: "Batir con un tenedor en una taza el jugo de limón con la sal y el orégano hasta disolver los granos. Agregar el aceite poco a poco batiendo para ligar."
+          preparacion: "Batir la crema de cacahuate con el agua tibia hasta disolver; agregar salsa de soya, jugo de lima, jengibre y miel hasta lograr textura sedosa y fluida."
         },
         preparacion: [
-          "Curar los nopales crudos con sal de grano durante 15 minutos; amasar y enjuagar con agua fría corriente para retirar toda la baba.",
-          "En un tazón hondo mezclar los nopales limpios y secos con el jitomate y la cebolla morada.",
-          "Agregar las dos latas de atún desmenuzado y el cilantro picado.",
-          "Bañar con el aliño al orégano y mezclar de manera envolvente.",
-          "Acomodar los cubos de aguacate en la superficie justo antes de llevar a la mesa para preservar su forma."
+          "Juntar ambas coles, la zanahoria, el cilantro y los edamames en un tazón amplio.",
+          "Agregar la pechuga de pollo deshebrada.",
+          "Rociar la salsa de cacahuate y masajear con dos cucharas para cubrir cada hebra de verdura.",
+          "Espolvorear cacahuates tostados al momento de servir."
         ]
       },
       {
-        id: "ens-03",
-        nombre: "Ensalada de Milpa con Garbanzos Tostados al Comal",
-        categoria: "Bajío Sustentable",
-        icono: "🌽",
+        id: "viral-06",
+        nombre: "Cowboy Caviar Salad Viral",
+        categoria: "Tendencia Viral",
+        icono: "🤠",
+        proteina: "Garbanzo/Legumbres",
         estacion: "Verano",
-        proteina: "Garbanzo/Legumbre",
-        tiempo: "25 min",
-        porciones: "4 porciones",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "15 min",
+        porciones: "5 porciones",
+        costo: "Económico",
         ingredientes: [
-          "2 tazas de garbanzos cocidos dorados en comal con una pizca de pimentón",
-          "2 elotes tiernos desgranados y salteados al punto dorado",
-          "2 tazas de verdolagas tiernas crudas (hojas y tallos suaves)",
-          "1 calabacita tierna en medias lunas muy delgadas",
-          "100 g de queso panela en cubos pequeños"
+          "1.5 tazas de frijoles negros cocidos y escurridos",
+          "1.5 tazas de frijoles carita o pintos cocidos",
+          "1.5 tazas de granos de elote amarillo tierno",
+          "1 pimiento morrón rojo y 1 amarillo en cubitos",
+          "1 aguacate grande en dados firmes",
+          "1/2 cebolla morada picada finita",
+          "1 taza de jitomate saladette picado sin semillas",
+          "1/2 taza de cilantro fresco picado"
         ],
         aderezo: {
-          nombre: "Vinagreta de Epazote y Ajo Asado",
+          nombre: "Vinagreta Dulce de Limón y Comino",
           ingredientes: [
-            "5 cdas. de aceite de oliva o vegetal",
-            "2 cdas. de vinagre de manzana",
-            "1 diente de ajo asado machacado en pasta",
-            "1 cda. de epazote fresco finamente picado",
-            "Sal de grano y pimienta"
+            "5 cdas. de aceite vegetal neutro o de oliva",
+            "Jugo de 3 limones verdes",
+            "1.5 cdas. de vinagre de manzana",
+            "1 cda. de miel de abeja",
+            "1/2 cdta. de comino en polvo y sal de grano"
           ],
-          preparacion: "Machacar el ajo asado con la sal en el fondo de una taza. Incorporar el vinagre de manzana y batir incorporando el aceite en forma de hilo. Agregar el epazote picado."
+          preparacion: "Batir el jugo de limón con la miel, el comino y el vinagre hasta emulsionar con el aceite."
         },
         preparacion: [
-          "Tostar los garbanzos cocidos en un comal o sartén caliente con sal y pimentón hasta que se sientan firmes y crujientes.",
-          "Saltear los granos de elote 5 minutos hasta que doren levemente los bordes.",
-          "Enjuagar y escurrir las verdolagas crudas; mezclarlas con la calabacita cruda y el queso panela.",
-          "Verter la vinagreta de epazote sobre los vegetales frescos.",
-          "Incorporar el elote salteado y coronar con los garbanzos crujientes bien calientes."
+          "Enjuagar y escurrir perfectamente las legumbres.",
+          "Unir en un tazón hondo los frijoles, el elote, los pimientos, la cebolla y el jitomate.",
+          "Bañar con la vinagreta y reposar 15 minutos en refrigeración para concentrar los sabores.",
+          "Añadir el aguacate y el cilantro justo antes de servir con totopos o tostadas horneadas."
         ]
       },
       {
-        id: "ens-04",
-        nombre: "Tunas Criollas con Jícama, Pollo y Pepitas Tostadas",
-        categoria: "Refrescante del Semidesierto",
-        icono: "🍈",
+        id: "viral-07",
+        nombre: "Pasta Griega Viral con Pollo y Tzatziki Casero",
+        categoria: "Tendencia Viral",
+        icono: "🇬🇷",
+        proteina: "Pasta",
         estacion: "Verano",
-        proteina: "Pollo",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "22 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "250 g de pasta corta (penne o fusilli) cocida al dente",
+          "200 g de pechuga de pollo marinada al orégano y asada en cubos",
+          "1 pepino en cubitos",
+          "1 taza de jitomates cherry en mitades",
+          "1/2 taza de aceitunas Kalamata",
+          "80 g de queso feta desmoronado"
+        ],
+        aderezo: {
+          nombre: "Aderezo Tzatziki de Yogur Griego y Pepino",
+          ingredientes: [
+            "1/2 taza de yogur griego natural sin azúcar",
+            "1/3 taza de pepino rallado y exprimido en manta",
+            "1 cda. de jugo de limón",
+            "1 cda. de aceite de oliva",
+            "1 diente de ajo rallado y eneldo fresco"
+          ],
+          preparacion: "Exprimir el pepino rallado con las manos para retirar el agua. Mezclar con el yogur, ajo, aceite de oliva, eneldo y sal hasta que quede espeso."
+        },
+        preparacion: [
+          "Dejar enfriar la pasta cocida y escurrida.",
+          "Mezclar la pasta con los jitomates cherry, el pepino y las aceitunas.",
+          "Integrar el pollo dorado templado y bañar con el aderezo tzatziki cremoso.",
+          "Culminar con queso feta por encima."
+        ]
+      },
+      {
+        id: "viral-08",
+        nombre: "Ensalada de Sandía, Feta y Menta Refrescante",
+        categoria: "Tendencia Viral",
+        icono: "🍉",
+        proteina: "Queso/Semillas",
+        estacion: "Verano",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "10 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "4 tazas de sandía dulce bien fría en cubos de 2 cm",
+          "100 g de queso feta desmoronado en trozos rústicos",
+          "1/2 taza de hojas de hierbabuena o menta fresca",
+          "1/4 cebolla morada en plumas muy finas",
+          "1/4 taza de pepitas de calabaza doradas"
+        ],
+        aderezo: {
+          nombre: "Aliño Cítrico de Lima y Aceite de Oliva Extra",
+          ingredientes: [
+            "3 cdas. de aceite de oliva virgen extra de buena acidez",
+            "Jugo colado de 2 limas o limones verdes",
+            "Escamas de sal marina y pimienta negra rota"
+          ],
+          preparacion: "Emulsionar brevemente el jugo de lima con el aceite de oliva y la sal con un tenedor."
+        },
+        preparacion: [
+          "Colocar los cubos de sandía helada en un platón hondo.",
+          "Distribuir la cebolla morada y las hojas frescas de menta.",
+          "Regar con el aliño cítrico de forma suave.",
+          "Desmoronar el queso feta encima y agregar las pepitas crujientes."
+        ]
+      },
+      {
+        id: "viral-09",
+        nombre: "Kale Caesar Masajeada con Garbanzos Crocantes",
+        categoria: "Tendencia Viral",
+        icono: "🥗",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Todo el año",
+        tendencia: "Viral YouTube/TikTok",
+        tiempo: "20 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "4 tazas de hojas de kale (col rizada) sin tallos leñosos, picadas",
+          "1.5 tazas de garbanzos cocidos horneados con pimentón hasta crocantes",
+          "1/3 taza de queso parmesano o cotija maduro rallado",
+          "1 cda. de aceite de oliva para el masaje"
+        ],
+        aderezo: {
+          nombre: "César Cremoso de Tahini y Ajo Asado",
+          ingredientes: [
+            "3 cdas. de pasta de tahini (o yogur griego)",
+            "2 cdas. de jugo de limón amarillo",
+            "1 cdta. de mostaza Dijon",
+            "1 diente de ajo asado machacado",
+            "2 cdas. de agua tibia y sal"
+          ],
+          preparacion: "Batir el tahini con el ajo asado, mostaza y limón; incorporar agua tibia hasta aligerar y obtener una emulsión cremosa."
+        },
+        preparacion: [
+          "Frotar y masajear con las dos manos las hojas de kale con sal y una cucharadita de aceite durante 2 minutos hasta que se oscurezcan y queden suaves.",
+          "Verter el aderezo César sobre el kale y mezclar uniformemente.",
+          "Coronar con los garbanzos crujientes calientes en lugar de croutons de pan.",
+          "Espolvorear el queso parmesano."
+        ]
+      },
+      {
+        id: "viral-10",
+        nombre: "Fusilli con Pesto Cremoso de Aguacate y Cherry",
+        categoria: "Tendencia Viral",
+        icono: "🥑",
+        proteina: "Pasta",
+        estacion: "Primavera",
+        tendencia: "Viral YouTube/TikTok",
         tiempo: "15 min",
         porciones: "4 porciones",
+        costo: "Medio",
         ingredientes: [
-          "2 tazas de pechuga de pollo cocida y deshebrada",
-          "4 tunas verdes frescas, peladas y cortadas en medias lunas",
-          "1.5 tazas de jícama en bastoncitos delgados",
-          "1 pepino criollo con cáscara en rodajas delgadas",
-          "1/3 taza de pepitas de calabaza doradas en comal",
-          "Hojas de menta fresca"
+          "250 g de pasta fusilli cocida al dente y enfriada",
+          "1.5 tazas de jitomates cherry partidos por la mitad",
+          "1 taza de bolitas de queso mozzarella fresco (bocconcini)",
+          "Hojas de albahaca fresca para adornar"
         ],
         aderezo: {
-          nombre: "Vinagreta Cítrica con Piquín Suave",
+          nombre: "Pesto Verde Batido de Aguacate y Albahaca",
           ingredientes: [
-            "4 cdas. de aceite vegetal neutro",
-            "Jugo de 2 limones y 2 cdas. de jugo de naranja dulce",
-            "1/2 cdta. de chile piquín en polvo",
-            "Sal de grano"
+            "1 aguacate maduro grande",
+            "1 taza de hojas de albahaca fresca lavadas",
+            "1 diente de ajo",
+            "1/4 taza de nueces o cacahuates tostados",
+            "Jugo de 1 limón verde",
+            "4 cdas. de aceite de oliva y sal"
           ],
-          preparacion: "Agitar enérgicamente en un frasco el jugo de naranja, limón, sal y el aceite vegetal hasta que el aliño tome un tono naranja claro homogéneo."
+          preparacion: "Procesar o licuar el aguacate con la albahaca, nueces, ajo, limón y aceite de oliva hasta que tome textura de crema aterciopelada."
         },
         preparacion: [
-          "Reunir en una fuente honda la jícama, el pepino y la pechuga de pollo deshebrada.",
-          "Añadir las medias lunas de tuna verde fría.",
-          "Bañar con la vinagreta cítrica y mezclar con suavidad para evitar romper las tunas.",
-          "Espolvorear abundantemente con las pepitas de calabaza crujientes y hojas frescas de menta."
+          "Enjuagar la pasta cocida con agua fría y escurrir.",
+          "Verter el pesto de aguacate sobre la pasta y mezclar hasta que todos los espirales queden verdes.",
+          "Sumar los jitomates cherry y las perlas de mozzarella fresca.",
+          "Servir de inmediato con hojas de albahaca."
         ]
       },
+
+      // --- BLOQUE 2: GASTRONOMÍA DEL BAJÍO Y REGIONALES DE MÉXICO ---
       {
-        id: "ens-05",
-        nombre: "Betabel Rostizado con Germen de Soya y Queso de Cabra",
-        categoria: "Huerta Otoñal",
-        icono: "🟣",
-        estacion: "Otoño",
-        proteina: "Germen/Semillas",
-        tiempo: "35 min",
-        porciones: "4 porciones",
-        ingredientes: [
-          "3 betabeles medianos rostizados al horno en gajos",
-          "2 tazas de germen de soya fresco crujiente",
-          "1 naranja dulce en gajos pelados vivos (sin membrana)",
-          "80 g de queso de cabra natural desmoronado",
-          "1/3 taza de nueces de castilla tostadas"
-        ],
-        aderezo: {
-          nombre: "Aderezo Balsámico con Jugo de Naranja",
-          ingredientes: [
-            "4 cdas. de aceite de oliva",
-            "1.5 cdas. de vinagre balsámico",
-            "2 cdas. del jugo escurrido de las naranjas",
-            "1/2 cdta. de mostaza suave",
-            "Sal y pimienta recién molida"
-          ],
-          preparacion: "Disolver la mostaza en el vinagre balsámico y el jugo de naranja. Verter el aceite de oliva en hilo continuo mientras se bate con tenedor para lograr consistencia aterciopelada."
-        },
-        preparacion: [
-          "Envolver los betabeles en papel aluminio y hornear a 200°C por 30 min hasta suaves; pelar y cortar en gajos.",
-          "Lavar y centrifugar el germen de soya para que conserve su frescura crocante.",
-          "Montar una cama con el germen de soya en el plato de servicio.",
-          "Distribuir los gajos de betabel rostizado y los supremas de naranja sobre el germen.",
-          "Rociar el aderezo balsámico y decorar con el queso de cabra desmoronado y las nueces partidas."
-        ]
-      },
-      {
-        id: "ens-06",
-        nombre: "Pasta Tornillo Tricolor con Atún, Elote y Aderezo Casero",
-        categoria: "Pasta Nutritiva",
-        icono: "🍝",
-        estacion: "Todo el año",
-        proteina: "Pasta",
+        id: "bajio-01",
+        nombre: "Nopales Curados en Sal con Queso de Rancho",
+        categoria: "Regional Bajío",
+        icono: "🌵",
+        estacion: "Primavera",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
         tiempo: "18 min",
         porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "250 g de pasta fusilli (tornillo) cocida al dente y enfriada",
-          "2 latas de atún en aceite escurridas",
-          "1 taza de granos de elote tierno al vapor",
-          "1 taza de jitomate cherry en mitades",
-          "1/2 taza de apio picado finamente para dar textura crujiente",
-          "1/4 taza de aceitunas negras rebanadas"
+          "4 pencas de nopal tierno cortadas en tiritas delgadas",
+          "2 jitomates saladette maduros picados en cubos",
+          "1/2 cebolla morada picada en plumas finas",
+          "100 g de queso fresco de rancho de Guanajuato desmoronado",
+          "1/2 manojo de cilantro fresco limpio picado",
+          "1 aguacate criollo en cubos"
         ],
         aderezo: {
-          nombre: "Crema Ligera de Yogur, Limón y Mostaza",
+          nombre: "Aliño de Limón Criollo y Orégano Seco",
           ingredientes: [
-            "3 cdas. de yogur natural sin azúcar",
-            "1.5 cdas. de mayonesa casera",
-            "Jugo colado de 1 limón verde",
-            "1 cdta. de mostaza clásica",
-            "Sal fina y pimienta blanca"
+            "4 cdas. de aceite de maíz o cártamo",
+            "Jugo colado de 2 limones agrios",
+            "1 cdta. de orégano silvestre seco quebrado con las palmas",
+            "Sal de grano al gusto"
           ],
-          preparacion: "En un cuenco mezclar el yogur y la mayonesa con el limón y la mostaza. Batir hasta lograr una crema homogénea y ligera."
+          preparacion: "Disolver la sal en el jugo de limón con un tenedor; batir junto al aceite y el orégano hasta emulsionar de forma ligera."
         },
         preparacion: [
-          "Hervir la pasta en abundante agua con sal hasta que esté al dente; enjuagar con agua fría y escurrir perfectamente.",
-          "En un recipiente amplio reunir la pasta fría con el atún escurrido, el elote, el apio y los jitomates cherry.",
-          "Verter la crema ligera de yogur y limón sobre toda la mezcla.",
-          "Revolver suavemente con cuchara de madera para que cada tornillo de pasta quede cubierto.",
-          "Refrigerar 15 minutos antes de servir para integrar los sabores y refrescar."
+          "Colocar los nopales crudos en un colador con 1 cucharada sopera de sal de grano; amasar con las manos 3 minutos y enjuagar a chorro de agua fría para retirar toda la baba.",
+          "Escurrir perfectamente los nopales limpios y secarlos con un paño.",
+          "Mezclar los nopales con el jitomate, cebolla morada y cilantro.",
+          "Bañar con el aliño al orégano y revolver.",
+          "Coronar con queso fresco de rancho y los dados de aguacate criollo."
         ]
       },
       {
-        id: "ens-07",
-        nombre: "Brócoli del Valle con Pollo al Limón y Ajonjolí Tostado",
-        categoria: "Cosecha de Invierno",
+        id: "bajio-02",
+        nombre: "Esquites Tatemados con Queso Cotija y Limón",
+        categoria: "Regional Bajío",
+        icono: "🌽",
+        estacion: "Verano",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "3 tazas de granos de elote tierno recién rebanado",
+          "1 cda. de epazote fresco finamente picado",
+          "1 chile serrano desvenado finamente picado",
+          "80 g de queso cotija añejo rallado",
+          "2 tazas de lechuga romana crujiente picada",
+          "1 cdta. de manteca o mantequilla para saltear"
+        ],
+        aderezo: {
+          nombre: "Mayonesa Ligera de Limón y Piquín",
+          ingredientes: [
+            "3 cdas. de mayonesa de buena calidad",
+            "2 cdas. de crema ácida de rancho",
+            "Jugo de 1.5 limones verdes",
+            "Chile piquín o tajín en polvo y sal fina"
+          ],
+          preparacion: "Batir en un cuenco la crema ácida con la mayonesa y el jugo de limón hasta obtener una salsa tersa."
+        },
+        preparacion: [
+          "Saltear los granos de elote en sartén caliente con mantequilla hasta que tomen notas tostadas y tatemadas; sumar el epazote y chile serrano.",
+          "Dejar entibiar los esquites.",
+          "En una fuente colocar la lechuga romana fresca en la base.",
+          "Añadir los esquites tatemados templados por encima.",
+          "Rociar el aderezo ligero de limón y cubrir copiosamente con queso cotija y chile piquín."
+        ]
+      },
+      {
+        id: "bajio-03",
+        nombre: "Fresas de Irapuato con Pollo y Espinacas",
+        categoria: "Regional Bajío",
+        icono: "🍓",
+        estacion: "Primavera",
+        proteina: "Pollo",
+        tendencia: "Bajío/Regional",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "250 g de pechuga de pollo asada a la plancha en fajitas",
+          "2 tazas de fresas frescas de Irapuato desinfectadas y en cuartos",
+          "4 tazas de espinaca tierna baby lavada",
+          "80 g de queso panela o de cabra natural desmoronado",
+          "1/3 taza de cacahuates o nueces tostadas"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Miel de Flor de Azahar y Limón",
+          ingredientes: [
+            "4 cdas. de aceite vegetal neutro o de oliva",
+            "2 cdas. de jugo de limón verde fresco",
+            "1.5 cdas. de miel pura de abeja",
+            "Sal fina y pimienta negra molida"
+          ],
+          preparacion: "Agitar con fuerza todos los componentes dentro de un frasquito hasta obtener una vinagreta espesa, translúcida y brillante."
+        },
+        preparacion: [
+          "Secar muy bien las espinacas con paño limpio para garantizar que el aderezo cubra las hojas.",
+          "Colocar las espinacas en un cuenco y revolver con la mitad de la vinagreta recién agitada.",
+          "Acomodar encima las fajitas de pollo templadas y los cuartos de fresa dulce.",
+          "Rociar el resto de la vinagreta y terminar con el queso y cacahuates tostados."
+        ]
+      },
+      {
+        id: "bajio-04",
+        nombre: "Verdolagas Crudas de Milpa con Pepino y Aguacate",
+        categoria: "Regional Bajío",
+        icono: "🌱",
+        estacion: "Verano",
+        proteina: "Vegetariana",
+        tendencia: "Bajío/Regional",
+        tiempo: "12 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "3 tazas de verdolagas tiernas crudas (lavadas y desinfectadas)",
+          "2 pepinos criollos rebanados en medias lunas con cáscara",
+          "2 jitomates bola maduros en gajos",
+          "1 aguacate grande en rebanadas suaves",
+          "1/4 cebolla morada en plumitas"
+        ],
+        aderezo: {
+          nombre: "Aliño Cítrico con Sal de Grano",
+          ingredientes: [
+            "4 cdas. de aceite de oliva o maíz",
+            "Jugo colado de 2 limones agrios",
+            "Sal de mar gruesa y pimienta recién molida"
+          ],
+          preparacion: "Batir el limón con la sal de mar y agregar el aceite en hilo batiendo enérgicamente."
+        },
+        preparacion: [
+          "Cortar solo los tallos tiernos y hojas carnosas de las verdolagas crudas (su acidez natural es extraordinaria).",
+          "En una ensaladera integrar las verdolagas con el pepino, jitomate y cebolla morada.",
+          "Verter el aliño y mezclar con suavidad.",
+          "Disponer las rebanadas de aguacate encima y terminar con unos granos de sal marina."
+        ]
+      },
+      {
+        id: "bajio-05",
+        nombre: "Betabel Rostizado con Gajos de Naranja y Pepitas",
+        categoria: "Regional Bajío",
+        icono: "🟣",
+        estacion: "Otoño",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
+        tiempo: "35 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "3 betabeles medianos rostizados al horno en gajos",
+          "2 naranjas peladas a vivo (gajos limpios sin piel blanca)",
+          "1/2 cebolla morada remojada en agua fría para suavizar",
+          "1/3 taza de pepitas de calabaza doradas en comal",
+          "2 tazas de hojas de arúgula o espinaca"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Naranja, Manzana y Comino",
+          ingredientes: [
+            "4 cdas. de aceite de oliva virgen",
+            "3 cdas. de jugo de naranja dulce natural",
+            "1 cda. de vinagre de manzana",
+            "1 pizca de comino molido y sal"
+          ],
+          preparacion: "Mezclar el comino con la sal, el vinagre y jugo de naranja; añadir el aceite de oliva batiendo con tenedor."
+        },
+        preparacion: [
+          "Envolver los betabeles en papel aluminio y hornear a 200°C 30 minutos hasta suaves; pelar bajo el chorro de agua y cortar en gajos.",
+          "Crear una base con las hojas verdes en el platón.",
+          "Distribuir los gajos de betabel rostizado y los supremas de naranja fresca.",
+          "Bañar con la vinagreta cítrica y terminar con las pepitas tostadas crujientes."
+        ]
+      },
+      {
+        id: "bajio-06",
+        nombre: "Brócoli de Celaya al Ajonjolí con Pollo Dorado",
+        categoria: "Regional Bajío",
         icono: "🥦",
         estacion: "Invierno",
         proteina: "Pollo",
-        tiempo: "20 min",
+        tendencia: "Bajío/Regional",
+        tiempo: "18 min",
         porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "3 tazas de ramilletes pequeños de brócoli fresco blanqueados 1 min",
-          "250 g de pechuga de pollo a la plancha en cubos",
-          "2 mandarinas en gajos sin semillas",
-          "2 cdas. de ajonjolí tostado en sartén caliente",
-          "1/4 cebolla morada en plumas muy finas"
+          "3 tazas de arbolitos pequeños de brócoli fresco blanqueados al dente",
+          "250 g de pechuga de pollo a la plancha en dados",
+          "2 mandarinas en gajos limpios",
+          "2 cdas. de ajonjolí blanco tostado en sartén seca",
+          "1/4 cebolla morada finamente picada"
         ],
         aderezo: {
-          nombre: "Vinagreta de Sésamo, Soya y Ajo",
+          nombre: "Vinagreta Cítrica de Sésamo y Soya",
           ingredientes: [
             "3 cdas. de aceite vegetal neutro",
-            "1 cdta. de aceite de sésamo puro",
-            "2 cdas. de salsa de soya clara",
-            "Jugo de 1 mandarina y 1/2 limón",
-            "1 diente de ajo pequeño rallado finamente"
+            "1 cdta. de aceite de sésamo tostado",
+            "2 cdas. de salsa de soya",
+            "Jugo de 1 mandarina y 1/2 limón verde",
+            "1 diente de ajo rallado"
           ],
-          preparacion: "Mezclar el ajo rallado con el jugo de mandarina y limón. Agregar la salsa de soya y los dos aceites; batir enérgicamente durante 20 segundos."
+          preparacion: "Batir el ajo rallado con los jugos cítricos, la salsa de soya y los dos aceites hasta emulsionar."
         },
         preparacion: [
-          "Sumergir el brócoli en agua hirviendo con sal durante solo 60 segundos; transferir a agua con hielo para fijar su color verde brillante.",
-          "Escurrir y secar completamente el brócoli sobre papel absorbente.",
-          "En una ensaladera reunir el brócoli crocante con los dados de pollo caliente o tibio.",
-          "Integrar los gajos jugosos de mandarina y la cebolla morada.",
-          "Bañar con la vinagreta de sésamo y esparcir copiosamente el ajonjolí tostado por encima."
+          "Sumergir el brócoli en agua hirviendo con sal solo 60 segundos y pasar a agua con hielo para que conserve su crocancia y verdor.",
+          "Secar el brócoli y colocarlo en un recipiente hondo junto con el pollo recién dorado.",
+          "Incorporar los gajos de mandarina y la cebolla morada.",
+          "Aliñar con la salsa de sésamo y espolvorear el ajonjolí tostado."
         ]
       },
       {
-        id: "ens-08",
-        nombre: "Germen de Alfalfa con Aguacate, Huevo Cocido y Semillas",
-        categoria: "Germinados Vivos",
-        icono: "🥚",
-        estacion: "Primavera",
-        proteina: "Germen/Semillas",
-        tiempo: "12 min",
-        porciones: "2 porciones",
-        ingredientes: [
-          "2.5 tazas de germen de alfalfa fresco y esponjoso",
-          "2 huevos cocidos duros cortados en cuartos",
-          "1 aguacate grande en rebanadas suaves",
-          "1 taza de jitomates saladette picados en cubitos",
-          "3 cdas. de semillas de girasol peladas y tostadas en comal",
-          "60 g de queso panela en dados"
-        ],
-        aderezo: {
-          nombre: "Aliño Clásico de Limón y Aceite con Orégano",
-          ingredientes: [
-            "4 cdas. de aceite de oliva virgen extra",
-            "Jugo de 2 limones agrios recién exprimidos",
-            "1/2 cdta. de orégano seco molido",
-            "Sal de grano al gusto"
-          ],
-          preparacion: "Disolver la sal en el jugo de limón con un tenedor; batir junto al aceite de oliva y el orégano hasta emulsionar de forma ligera."
-        },
-        preparacion: [
-          "Colocar el germen de alfalfa limpio y bien escurrido formando un lecho verde esponjoso en dos platos.",
-          "Repartir por encima los cubos de jitomate y queso panela.",
-          "Acomodar los cuartos de huevo duro y las rebanadas de aguacate de forma simétrica.",
-          "Rociar delicadamente con el aliño al orégano sobre todos los ingredientes.",
-          "Finalizar coronando con las semillas de girasol tostadas para una mordida crujiente."
-        ]
-      },
-      {
-        id: "ens-09",
-        nombre: "Garbanzos Especiados con Queso Panela y Pepino",
-        categoria: "Legumbres Frescas",
-        icono: "🧆",
-        estacion: "Todo el año",
-        proteina: "Garbanzo/Legumbre",
+        id: "bajio-07",
+        nombre: "Ensalada de Milpa con Calabacita y Panela",
+        categoria: "Regional Bajío",
+        icono: "🧺",
+        estacion: "Verano",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
         tiempo: "15 min",
         porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "2.5 tazas de garbanzos cocidos y bien escurridos",
-          "150 g de queso panela fresco en cubitos",
-          "1 pepino grande con cáscara cortado en cubos medianos",
-          "1 taza de jitomates cherry partidos por la mitad",
-          "1/3 taza de hojas de hierbabuena fresca picada",
+          "2 calabacitas italianas tiernas cortadas en láminas delgadísimas",
+          "1.5 tazas de granos de elote tierno salteados al punto",
+          "1 taza de verdolagas tiernas crudas limpias",
+          "120 g de queso panela fresco en cubitos",
+          "1 cda. de epazote fresco picado"
+        ],
+        aderezo: {
+          nombre: "Aliño al Limón y Epazote Fresco",
+          ingredientes: [
+            "4 cdas. de aceite vegetal neutro o de maíz",
+            "Jugo colado de 2 limones criollos",
+            "1/2 cdta. de sal marina fina",
+            "Pizca de chile verde serrano picado finito"
+          ],
+          preparacion: "Disolver la sal en el jugo de limón y batir con el aceite y el serrano hasta integrar."
+        },
+        preparacion: [
+          "Reunir en una ensaladera las láminas crudas de calabacita con los granos de elote tierno recién salteados.",
+          "Añadir las verdolagas crudas y el epazote picado.",
+          "Bañar con el aliño al limón.",
+          "Agregar los cubos de queso panela y revolver delicadamente."
+        ]
+      },
+      {
+        id: "bajio-08",
+        nombre: "Tunas Verdes con Jícama y Pepitas del Semidesierto",
+        categoria: "Regional Bajío",
+        icono: "🍈",
+        estacion: "Verano",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
+        tiempo: "12 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "4 tunas verdes frescas y firmes peladas y en rodajas",
+          "1.5 tazas de jícama cortada en bastones delgados",
+          "1 pepino con piel cortado en medias lunas",
+          "1/3 taza de pepitas de calabaza doradas con sal",
+          "Hojas de hierbabuena fresca entera"
+        ],
+        aderezo: {
+          nombre: "Aliño Cítrico con Piquín y Limón",
+          ingredientes: [
+            "3 cdas. de aceite de oliva virgen extra",
+            "Jugo de 2 limones y 2 cdas. de jugo de naranja dulce",
+            "Chile piquín en polvo al gusto",
+            "Sal de grano"
+          ],
+          preparacion: "Agitar en un frasco el jugo de naranja, jugo de limón, sal y aceite hasta unir."
+        },
+        preparacion: [
+          "Combinar en una fuente la jícama fresca con el pepino crujiente.",
+          "Añadir las rodajas de tuna verde fría.",
+          "Rociar el aliño cítrico sobre la fruta y mezclar suavemente para no maltratar la tuna.",
+          "Espolvorear con las pepitas doradas y hojas de hierbabuena."
+        ]
+      },
+      {
+        id: "bajio-09",
+        nombre: "Salpicón Tradicional de Res o Pollo con Rábanos",
+        categoria: "Regional Bajío",
+        icono: "🥩",
+        estacion: "Todo el año",
+        proteina: "Pollo",
+        tendencia: "Bajío/Regional",
+        tiempo: "15 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2.5 tazas de carne cocida de res o pechuga de pollo deshebrada",
+          "3 tazas de lechuga orejona picada en tiras finas",
+          "2 jitomates saladette picados en dados",
+          "4 rábanos limpios en rodajas finísimas",
+          "1/2 cebolla morada en plumas",
+          "1 aguacate en cubos",
+          "60 g de queso cotija o de rancho desmoronado"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Orégano y Vinagre de Manzana",
+          ingredientes: [
+            "5 cdas. de aceite de maíz o canola",
+            "2.5 cdas. de vinagre de manzana",
+            "Jugo de 1 limón agrio",
+            "1 cdta. de orégano seco molido",
+            "Sal de mar y pimienta negra molida"
+          ],
+          preparacion: "Batir enérgicamente el vinagre, limón, orégano y sal; incorporar el aceite en hilo batiendo con tenedor."
+        },
+        preparacion: [
+          "Mezclar la carne deshebrada fría con la lechuga orejona picada, jitomate, rábano y cebolla morada.",
+          "Verter la vinagreta de orégano sobre toda la preparación y revolver durante un minuto.",
+          "Dejar reposar 5 minutos para que la lechuga y carne absorban los sabores.",
+          "Servir en tostadas de maíz con queso espolvoreado y cubos de aguacate."
+        ]
+      },
+      {
+        id: "bajio-10",
+        nombre: "Ejotes Tiernos con Huevo Duro y Vinagreta de Ajo Frito",
+        categoria: "Regional Bajío",
+        icono: "🥚",
+        estacion: "Todo el año",
+        proteina: "Queso/Semillas",
+        tendencia: "Bajío/Regional",
+        tiempo: "18 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "300 g de ejotes verdes tiernos limpios cocidos al vapor al dente",
+          "3 huevos cocidos duros cortados en cuartos",
+          "1/2 cebolla morada en plumas finas",
+          "2 cdas. de perejil fresco picado"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Ajo Dorado en Sartén",
+          ingredientes: [
+            "4 cdas. de aceite de oliva virgen",
+            "1 diente de ajo rebanado finamente y dorado en aceite suave",
+            "1.5 cdas. de vinagre de vino o manzana",
+            "Sal marina y pimienta"
+          ],
+          preparacion: "Dourar el ajo en las 4 cucharadas de aceite a fuego muy bajo sin quemar; retirar del fuego, entibiar y mezclar con el vinagre y la sal."
+        },
+        preparacion: [
+          "Dejar enfriar los ejotes cocidos al dente.",
+          "Mezclar los ejotes con la cebolla morada y perejil picado.",
+          "Bañar con la vinagreta tibia de ajo dorado.",
+          "Colocar los cuartos de huevo duro encima para servir."
+        ]
+      },
+
+      // --- BLOQUE 3: PROTEÍNA - POLLO Y PAVO ---
+      {
+        id: "pollo-01",
+        nombre: "César Clásica con Pechuga a las Brasas",
+        categoria: "Aves",
+        icono: "🍗",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Clásica Internacional",
+        tiempo: "20 min",
+        porciones: "3 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "250 g de pechuga de pollo asada a la parrilla cortada en tiras",
+          "4 tazas de lechuga romana crujiente lavada y seca",
+          "1 taza de croutons dorados con ajo y mantequilla",
+          "50 g de queso parmesano en lajas delgadas"
+        ],
+        aderezo: {
+          nombre: "Aderezo César Casero sin Embotellados",
+          ingredientes: [
+            "3 cdas. de mayonesa de buena calidad",
+            "1 cda. de crema ácida o yogur natural",
+            "1 cdta. de mostaza Dijon",
+            "1 cdta. de salsa inglesa",
+            "Jugo de 1/2 limón y 1 filete de anchoa (o pasta de ajo)",
+            "Pimienta negra recién molida"
+          ],
+          preparacion: "Mezclar en un tazón la pasta de ajo o anchoa con el jugo de limón y la salsa inglesa. Integrar la mayonesa, crema y mostaza batiendo hasta obtener una emulsión lisa y densa."
+        },
+        preparacion: [
+          "Asegurarse de que la lechuga esté perfectamente seca para que el aderezo se adhiera.",
+          "Envolver la lechuga con dos tercios del aderezo en una ensaladera.",
+          "Colocar las tiras calientes de pechuga sobre la lechuga fría.",
+          "Añadir los croutons crujientes, salsear con el resto del aderezo y rematar con parmesano."
+        ]
+      },
+      {
+        id: "pollo-02",
+        nombre: "Cobb Salad Tradicional Americana",
+        categoria: "Aves",
+        icono: "🥓",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Clásica Internacional",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "2 tazas de pechuga de pollo cocida o asada en dados",
+          "4 rebanadas de tocino doradas y crujientes picadas",
+          "2 huevos cocidos duros picados en dados",
+          "1 aguacate grande en dados",
+          "1 taza de jitomates en cubitos",
+          "60 g de queso azul o gorgonzola desmoronado",
+          "4 tazas de lechuga romana y escarola"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Vino Tinto y Mostaza Antigua",
+          ingredientes: [
+            "5 cdas. de aceite de oliva",
+            "2 cdas. de vinagre de vino tinto",
+            "1 cdta. de mostaza suave",
+            "1/2 diente de ajo rallado, sal y pimienta"
+          ],
+          preparacion: "Batir en frasco el vinagre con la mostaza, ajo y sal; incorporar el aceite hasta ligar."
+        },
+        preparacion: [
+          "Colocar el lecho de lechuga en un platón grande extendido.",
+          "Disponer los ingredientes en hileras o franjas coloridas paralelas: pollo, tocino, huevo, jitomate, queso azul y aguacate.",
+          "Servir el aderezo por separado o verter al centro antes de mezclar en la mesa."
+        ]
+      },
+      {
+        id: "pollo-03",
+        nombre: "Coronation Chicken al Curry con Manzana y Pasas",
+        categoria: "Aves",
+        icono: "🍛",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Bistro Gourmet",
+        tiempo: "15 min",
+        porciones: "3-4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "2 tazas de pechuga de pollo cocida en cubos medianos",
+          "1 manzana roja en láminas delgadas con piel",
+          "1/3 taza de uvas pasas rubias o arándanos deshidratados",
+          "1/3 taza de almendras tostadas fileteadas",
+          "3 tazas de hojas de espinaca fresca tierna"
+        ],
+        aderezo: {
+          nombre: "Aderezo Coronation de Yogur y Curry",
+          ingredientes: [
+            "4 cdas. de yogur natural sin azúcar",
+            "2 cdas. de mayonesa",
+            "1.5 cdtas. de polvo de curry dulce suave",
+            "1 cda. de mermelada de mango o néctar de durazno",
+            "Sal y pimienta blanca"
+          ],
+          preparacion: "Mezclar el polvo de curry con la mermelada y yogur hasta que tome un color amarillo uniforme; sumar la mayonesa y sazonar."
+        },
+        preparacion: [
+          "Envolver los cubos de pollo cocido con la manzana y pasas dentro del aderezo al curry.",
+          "Armar una cama de espinacas frescas en platos individuales.",
+          "Servir la ensalada de pollo al curry sobre las hojas verdes.",
+          "Coronar con las almendras fileteadas tostadas."
+        ]
+      },
+      {
+        id: "pollo-04",
+        nombre: "Thai Laab Gai de Pollo Picado con Menta y Lima",
+        categoria: "Aves",
+        icono: "🌶️",
+        proteina: "Pollo",
+        estacion: "Verano",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "300 g de pechuga de pollo picada a cuchillo muy finita",
+          "1/2 cebolla morada en plumas finas",
+          "1 taza de hojas de menta fresca limpia",
+          "1/2 taza de cilantro fresco picado",
+          "Cogollos de lechuga romana o francesa para servir"
+        ],
+        aderezo: {
+          nombre: "Aliño Tailandés Picante con Lima",
+          ingredientes: [
+            "3 cdas. de jugo de lima o limón verde colado",
+            "2 cdas. de salsa de soya clara o de pescado",
+            "1 pizca de chile quebrado seco (peperoncino)",
+            "1 cdta. de arroz blanco tostado en comal y triturado en polvo (da aroma tostado)"
+          ],
+          preparacion: "Mezclar el jugo de lima con la salsa salada, el chile seco y el polvo de arroz tostado."
+        },
+        preparacion: [
+          "Cocinar el pollo picado en una sartén con dos cucharadas de agua durante 4 minutos hasta cocido sin dorar.",
+          "Retirar del fuego y verter inmediatamente el aliño caliente.",
+          "Incorporar la cebolla morada, la menta y el cilantro.",
+          "Servir tibio en hojas de lechuga fresca usándolas como barquitas."
+        ]
+      },
+      {
+        id: "pollo-05",
+        nombre: "Pollo al Chipotle con Elote Asado y Frijol Negro",
+        categoria: "Aves",
+        icono: "🌯",
+        proteina: "Pollo",
+        estacion: "Todo el año",
+        tendencia: "Regional Bajío",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2 tazas de pollo cocido en fajitas con sal y ajo",
+          "1 taza de frijoles negros enteros cocidos escurridos",
+          "1 taza de granos de elote dorado en sartén",
+          "1 pimiento rojo en cubos",
+          "3 tazas de lechuga romana picada",
+          "Totopos de maíz horneados"
+        ],
+        aderezo: {
+          nombre: "Crema de Chipotle y Limón",
+          ingredientes: [
+            "3 cdas. de crema ácida",
+            "1 cda. de mayonesa",
+            "1 cdta. de chile chipotle adobado licuado",
+            "Jugo de 1 limón verde y sal"
+          ],
+          preparacion: "Batir la crema con la mayonesa y el chipotle adobado hasta obtener una salsa color salmón homogénea."
+        },
+        preparacion: [
+          "Colocar la lechuga picada en un tazón amplio.",
+          "Añadir el frijol negro escurrido, el elote dorado y los pimientos.",
+          "Incorporar las tiras de pollo.",
+          "Bañar con el aderezo de chipotle y servir con totopos alrededor."
+        ]
+      },
+
+      // --- BLOQUE 4: PROTEÍNA - ATÚN Y PESCADOS ---
+      {
+        id: "atun-01",
+        nombre: "Ensalada Nizarda (Salade Niçoise) Tradicional",
+        categoria: "Mariscos",
+        icono: "🐟",
+        proteina: "Atún/Pescado",
+        estacion: "Primavera",
+        tendencia: "Clásica Internacional",
+        tiempo: "20 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "2 latas de atún en aceite de oliva escurrido (o lomo de atún sellado)",
+          "2 papas cambray cocidas en cuartos",
+          "150 g de ejotes cocidos al dente",
+          "2 huevos duros en mitades",
+          "2 jitomates en gajos",
+          "10 aceitunas negras (tipo Kalamata o Niçoise)",
+          "Hojas de lechuga francesa"
+        ],
+        aderezo: {
+          nombre: "Vinagreta Francesa de Dijón",
+          ingredientes: [
+            "5 cdas. de aceite de oliva virgen extra",
+            "2 cdas. de vinagre de vino blanco",
+            "1 cdta. colmada de mostaza Dijon",
+            "Sal marina y pimienta negra molida"
+          ],
+          preparacion: "Disolver la mostaza en el vinagre y batir incorporando el aceite en hilo continuo hasta obtener consistencia opaca y sedosa."
+        },
+        preparacion: [
+          "Formar un lecho con las hojas de lechuga francesa seca.",
+          "Distribuir los ingredientes por secciones: papas cocidas, ejotes verdes, gajos de jitomate, huevos duros y atún en lascas grandes.",
+          "Colocar las aceitunas negras.",
+          "Bañar cada sección armoniosamente con la vinagreta de Dijon."
+        ]
+      },
+      {
+        id: "atun-02",
+        nombre: "Poke Bowl de Atún Fresco con Aguacate y Edamames",
+        categoria: "Mariscos",
+        icono: "🥢",
+        proteina: "Atún/Pescado",
+        estacion: "Verano",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
+        porciones: "2 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "200 g de lomo de atún fresco en cubitos de 1.5 cm",
+          "1 aguacate grande en láminas",
+          "1 pepino en rodajas",
+          "1 taza de edamames cocidos desvainados",
+          "1 taza de arroz cocido frío o lechugas mixtas",
+          "1 cda. de ajonjolí negro y cebollín rebanado"
+        ],
+        aderezo: {
+          nombre: "Marinada Poke de Soya, Sésamo y Jengibre",
+          ingredientes: [
+            "2.5 cdas. de salsa de soya",
+            "1 cdta. de aceite de sésamo tostado",
+            "1 cdta. de jugo de lima",
+            "1/2 cdta. de jengibre fresco rallado",
+            "1/2 cdta. de miel pura"
+          ],
+          preparacion: "Mezclar la salsa de soya con el aceite de sésamo, lima, jengibre y miel hasta integrar por completo."
+        },
+        preparacion: [
+          "Marinar los cubos de atún crudo fresco con la mitad del aderezo durante 8 minutos en refrigeración.",
+          "Servir la base de lechuga o arroz en tazones individuales.",
+          "Acomodar el atún marinado, el aguacate, pepino y edamames en cuadrantes.",
+          "Rociar el aderezo restante y decorar con ajonjolí negro y cebollín."
+        ]
+      },
+      {
+        id: "atun-03",
+        nombre: "Pasta Corta con Atún, Maíz y Aceitunas Negras",
+        categoria: "Mariscos",
+        icono: "🥫",
+        proteina: "Atún/Pescado",
+        estacion: "Todo el año",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "250 g de pasta tornillo o codito cocida al dente y fría",
+          "2 latas de atún en agua bien drenadas",
+          "1 taza de granos de elote tierno cocido",
+          "1/2 taza de aceitunas negras en rodajas",
+          "2 ramas de apio finamente picado",
           "1/4 cebolla morada picada fino"
         ],
         aderezo: {
-          nombre: "Vinagreta de Comino y Limón Verde",
+          nombre: "Crema de Limón y Mayonesa Casera",
           ingredientes: [
-            "5 cdas. de aceite de oliva virgen",
-            "Jugo colado de 2 limones verdes agrios",
-            "1/2 cdta. de comino en polvo",
-            "Sal de grano y pimienta negra quebrada"
+            "3 cdas. de mayonesa",
+            "2 cdas. de crema o yogur griego",
+            "Jugo de 1 limón grande",
+            "1 pizca de orégano seco, sal y pimienta"
           ],
-          preparacion: "En un tazón pequeño batir el comino en polvo, la sal y la pimienta con el jugo de limón. Integrar el aceite en hilo batiendo con tenedor."
+          preparacion: "Mezclar en un tazón la mayonesa con la crema, jugo de limón y sazonar con el orégano hasta quedar fluida."
         },
         preparacion: [
-          "Enjuagar los garbanzos cocidos con agua purificada y escurrirlos completamente.",
-          "En un cuenco grande unir los garbanzos con los cubos de pepino, los jitomates cherry y la cebolla.",
-          "Incorporar la hierbabuena fresca picada para brindar aroma intenso.",
-          "Verter la vinagreta de comino y mezclar durante un minuto para que los garbanzos se impregnen.",
-          "Agregar los cubos de queso panela al final con movimientos suaves para conservar su consistencia intacta."
+          "Enjuagar la pasta cocida con agua fría y escurrir.",
+          "Unir en un bol la pasta con el atún escurrido, elote, apio y aceitunas negras.",
+          "Verter el aderezo cremoso y mezclar de manera uniforme.",
+          "Refrigerar 20 minutos antes de consumir."
         ]
       },
       {
-        id: "ens-10",
-        nombre: "Lentejas Pardinas con Mostaza Antigua y Queso Feta",
-        categoria: "Bistro Campirano",
-        icono: "🥣",
-        estacion: "Otoño",
-        proteina: "Garbanzo/Legumbre",
-        tiempo: "25 min",
+        id: "atun-04",
+        nombre: "Salpicón de Pulpo y Camarón al Cilantro",
+        categoria: "Mariscos",
+        icono: "🐙",
+        proteina: "Atún/Pescado",
+        estacion: "Primavera",
+        tendencia: "Regional Bajío",
+        tiempo: "15 min",
         porciones: "4 porciones",
+        costo: "Medio",
         ingredientes: [
-          "2.5 tazas de lentejas pardinas cocidas al dente (enteras, no batidas)",
-          "1 zanahoria finamente picada en cubitos pequeños",
-          "1/2 taza de queso feta o queso de rancho seco desmoronado",
-          "1/2 taza de nueces de castilla tostadas y troceadas",
-          "2 cdas. de perejil liso picado fresco"
+          "150 g de camarón cocido pelado en trozos",
+          "150 g de pulpo cocido cortado en rodajas",
+          "2 jitomates saladette picados en cubos sin semillas",
+          "1 pepino en dados",
+          "1/4 cebolla morada en plumas",
+          "1/2 taza de cilantro fresco picado",
+          "1 aguacate en cubos"
+        ],
+        aderezo: {
+          nombre: "Aliño Costero de Limón y Aceite de Oliva",
+          ingredientes: [
+            "5 cdas. de aceite de oliva virgen extra",
+            "Jugo de 3 limones verdes grandes colados",
+            "1/2 cdta. de orégano seco",
+            "Sal de grano y pimienta negra molida"
+          ],
+          preparacion: "Disolver la sal en el jugo de limón agrio con un tenedor; incorporar el orégano y batir el aceite en hilo hasta homogeneizar."
+        },
+        preparacion: [
+          "Mezclar los mariscos cocidos fríos con los vegetales picados y el cilantro.",
+          "Bañar con el aliño al limón y reposar 10 minutos para que el marisco se perfume.",
+          "Incorporar suavemente los dados de aguacate al final para no batirlo.",
+          "Servir con tostadas crujientes."
+        ]
+      },
+
+      // --- BLOQUE 5: PROTEÍNA - GARBANZOS Y LEGUMBRES ---
+      {
+        id: "leg-01",
+        nombre: "Garbanzos Mediterráneos con Feta, Pepino y Menta",
+        categoria: "Legumbres",
+        icono: "🧆",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Todo el año",
+        tendencia: "Clásica Internacional",
+        tiempo: "12 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2.5 tazas de garbanzos cocidos y bien escurridos",
+          "1 pepino con cáscara cortado en cubitos",
+          "1 taza de jitomate cherry en mitades",
+          "80 g de queso feta desmoronado",
+          "1/3 taza de hojas de menta o hierbabuena picada",
+          "1/4 cebolla morada picada fino"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Limón Amarillo y Comino",
+          ingredientes: [
+            "5 cdas. de aceite de oliva virgen",
+            "Jugo de 1.5 limones amarillos",
+            "1/2 cdta. de comino molido",
+            "Sal marina y pimienta negra recién molida"
+          ],
+          preparacion: "Batir enérgicamente el comino, sal y limón en un tazón; verter el aceite batiendo con tenedor."
+        },
+        preparacion: [
+          "Enjuagar los garbanzos cocidos con agua purificada y secarlos con paño.",
+          "Mezclar los garbanzos con el pepino, jitomate cherry, cebolla y menta fresca.",
+          "Bañar con la vinagreta de comino y mezclar durante un minuto.",
+          "Agregar el queso feta por encima antes de servir."
+        ]
+      },
+      {
+        id: "leg-02",
+        nombre: "Lentejas Francesas con Mostaza Antigua y Nueces",
+        categoria: "Legumbres",
+        icono: "🥣",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Otoño",
+        tendencia: "Bistro Gourmet",
+        tiempo: "22 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2.5 tazas de lentejas pardinas cocidas al dente (firmes, no deshechas)",
+          "1 zanahoria finamente picada en brunoise",
+          "1/2 taza de nueces de castilla tostadas partidas",
+          "2 cdas. de perejil fresco picado",
+          "60 g de queso de cabra natural desmoronado"
         ],
         aderezo: {
           nombre: "Vinagreta Francesa de Mostaza en Grano",
@@ -620,252 +1507,403 @@
             "4 cdas. de aceite de oliva",
             "1.5 cdas. de vinagre de vino tinto o manzana",
             "1 cdta. colmada de mostaza antigua con granos enteros",
-            "1 pizca de ajo rallado, sal y pimienta"
+            "1 pizca de ajo rallado y sal"
           ],
-          preparacion: "Mezclar la mostaza con el vinagre y la pizca de ajo hasta disolver. Batir con batidor pequeño o tenedor mientras se añade el aceite de oliva."
+          preparacion: "Disolver la mostaza antigua con el vinagre y ajo; agregar el aceite de oliva batiendo hasta espesar."
         },
         preparacion: [
-          "Verter la mitad del aderezo sobre las lentejas cuando todavía estén ligeramente tibias; esto potencia la absorción de los aromas.",
+          "Verter la mitad de la vinagreta sobre las lentejas cuando aún estén tibias para que absorban todo el sabor del aliño.",
           "Dejar reposar 10 minutos a temperatura ambiente.",
-          "Integrar la zanahoria cruda crujiente, el perejil fresco y las nueces tostadas.",
-          "Añadir el resto de la vinagreta y revolver con gentileza.",
-          "Coronar con el queso feta desmoronado y servir templada o a temperatura fresca."
+          "Sumar la zanahoria crocante, el perejil y las nueces tostadas.",
+          "Aliñar con el resto de la vinagreta y terminar con el queso de cabra."
         ]
       },
       {
-        id: "ens-11",
-        nombre: "César Clásica con Pechuga de Pollo a las Brasas",
-        categoria: "Clásica Universal",
-        icono: "🍗",
-        estacion: "Todo el año",
-        proteina: "Pollo",
-        tiempo: "20 min",
+        id: "leg-03",
+        nombre: "Edamames con Quinoa y Vinagreta de Jengibre",
+        categoria: "Legumbres",
+        icono: "🫛",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Primavera",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
         porciones: "3 porciones",
+        costo: "Medio",
         ingredientes: [
-          "250 g de pechuga de pollo marinada con sal, ajo y asada en tiras",
-          "4 tazas de lechuga orejona crujiente lavada y cortada en trozos",
-          "1 taza de croutons dorados con mantequilla y ajo",
-          "50 g de queso parmesano o cotija maduro en lajas finas"
+          "1.5 tazas de edamames cocidos desvainados",
+          "1.5 tazas de quinoa cocida esponjosa fría",
+          "1 zanahoria rallada en hebras finas",
+          "1/3 taza de arándanos secos o pasas",
+          "2 cdas. de semillas de girasol tostadas"
         ],
         aderezo: {
-          nombre: "Aderezo César Casero sin Embotellados",
+          nombre: "Vinagreta de Jengibre Fresco y Sésamo",
           ingredientes: [
-            "3 cdas. de mayonesa de buena calidad",
-            "1 cda. de crema ácida o yogur natural",
-            "1 cdta. de mostaza suave",
-            "1 cdta. de salsa inglesa",
-            "Jugo de 1/2 limón y 1 diente de ajo machacado en pasta",
-            "Pimienta negra recién molida"
+            "3 cdas. de aceite vegetal o de oliva",
+            "1 cdta. de aceite de ajonjolí tostado",
+            "2 cdas. de vinagre de arroz",
+            "1 cdta. de jengibre fresco recién rallado",
+            "1 cdta. de miel y sal"
           ],
-          preparacion: "Mezclar en un tazón la pasta de ajo con la salsa inglesa y el jugo de limón. Integrar la mayonesa, la crema y la mostaza batiendo hasta obtener una textura tersa y sedosa."
+          preparacion: "Mezclar el jengibre con el vinagre, la miel y sal; ligar con los dos aceites batiendo vigorosamente."
         },
         preparacion: [
-          "Asegurarse de que las hojas de lechuga orejona estén completamente secas y frías para garantizar la textura crujiente.",
-          "En un platón grande bañar la lechuga con tres cuartas partes del aderezo César y revolver con las manos limpias.",
-          "Colocar las tiras calientes de pechuga recién asada en el centro.",
-          "Agregar los croutons de pan crujiente.",
-          "Rociar el aderezo restante y cubrir con las lajas de queso parmesano maduro."
+          "Combinar la quinoa fría y suelta con los edamames cocidos y la zanahoria rallada.",
+          "Sumar los arándanos y las semillas de girasol tostadas.",
+          "Verter la vinagreta de jengibre y revolver de forma envolvente.",
+          "Servir fresca a temperatura ambiente."
         ]
       },
       {
-        id: "ens-12",
-        nombre: "Ensalada Griega con Queso Feta, Jitomate y Pepino",
-        categoria: "Mediterránea",
-        icono: "🫒",
-        estacion: "Verano",
-        proteina: "Queso",
-        tiempo: "12 min",
-        porciones: "4 porciones",
+        id: "leg-04",
+        nombre: "Lentejas Tibias con Huevo Poché y Espinacas",
+        categoria: "Legumbres",
+        icono: "🍳",
+        proteina: "Garbanzo/Legumbres",
+        estacion: "Invierno",
+        tendencia: "Bistro Gourmet",
+        tiempo: "20 min",
+        porciones: "2 porciones",
+        costo: "Económico",
         ingredientes: [
-          "3 jitomates maduros y carnosos cortados en gajos",
-          "1 pepino con cáscara cortado en rodajas gruesas",
-          "1/2 cebolla morada cortada en plumas finas",
-          "1 pimiento verde cortado en aros",
-          "100 g de queso feta en bloque o cubos grandes",
-          "10 aceitunas negras tipo Kalamata enteras"
+          "2 tazas de lentejas cocidas firmes templadas",
+          "2 huevos poché recién escalfados",
+          "2 tazas de espinaca tierna lavada",
+          "1 echalote o 1/4 cebolla morada pochada en aceite"
         ],
         aderezo: {
-          nombre: "Aliño Griego Tradicional al Orégano",
+          nombre: "Vinagreta Tibia de Mostaza Dijon",
           ingredientes: [
-            "5 cdas. de aceite de oliva virgen extra",
-            "2 cdas. de vinagre de vino tinto",
-            "1 cdta. colmada de orégano seco molido",
-            "Sal de grano y pimienta"
+            "4 cdas. de aceite de oliva virgen extra",
+            "1.5 cdas. de vinagre de jerez o vino tinto",
+            "1 cdta. de mostaza Dijon",
+            "Sal marina y pimienta negra rota"
           ],
-          preparacion: "Emulsionar enérgicamente en frasco cerrado el aceite de oliva con el vinagre de vino y la sal marina."
+          preparacion: "Emulsionar la mostaza con el vinagre y ligar con aceite de oliva batiendo en taza."
         },
         preparacion: [
-          "Colocar en una ensaladera rústica el jitomate, pepino, pimiento verde y cebolla morada.",
-          "Bañar los vegetales con la vinagreta emulsionada y revolver brevemente.",
-          "Colocar en la parte superior el queso feta y las aceitunas negras sin romper el queso.",
-          "Espolvorear con orégano seco adicional sobre el bloque de queso feta y añadir un chorrito final de aceite de oliva."
+          "Mezclar las lentejas tibias con las espinacas frescas y la cebolla; el calor residual ablandará levemente la espinaca.",
+          "Aliñar con la vinagreta de Dijon.",
+          "Servir en dos platos hondos.",
+          "Colocar con cuidado un huevo poché caliente en el centro de cada plato para que al cortarlo su yema se mezcle con las lentejas."
         ]
       },
+
+      // --- BLOQUE 6: PROTEÍNA - PASTA Y GRANOS ---
       {
-        id: "ens-13",
-        nombre: "Coditos Hawaianos con Piña Asada y Jamón de Pavo",
-        categoria: "Pasta Clásica",
-        icono: "🍍",
-        estacion: "Verano",
+        id: "pasta-01",
+        nombre: "Fusilli Caprese con Pesto Casero y Bocconcini",
+        categoria: "Pastas",
+        icono: "🍝",
         proteina: "Pasta",
+        estacion: "Primavera",
+        tendencia: "Clásica Internacional",
+        tiempo: "18 min",
+        porciones: "4 porciones",
+        costo: "Medio",
+        ingredientes: [
+          "250 g de pasta fusilli cocida al dente y enfriada",
+          "1.5 tazas de jitomates cherry en mitades",
+          "150 g de mini perlas de queso mozzarella fresco (bocconcini)",
+          "2 cdas. de piñones o nueces picadas tostadas"
+        ],
+        aderezo: {
+          nombre: "Pesto Genovés Tradicional de Albahaca",
+          ingredientes: [
+            "2 tazas de hojas de albahaca fresca limpia",
+            "1 diente de ajo pequeño",
+            "1/4 taza de nueces o piñones",
+            "1/3 taza de queso parmesano rallado",
+            "70 ml de aceite de oliva virgen extra y sal"
+          ],
+          preparacion: "Triturar o licuar la albahaca con el ajo, nueces y sal; incorporar el aceite de oliva poco a poco y finalmente integrar el parmesano."
+        },
+        preparacion: [
+          "Enjuagar la pasta cocida con agua fría y escurrir.",
+          "En una fuente amplia envolver la pasta con el pesto fresco hasta cubrir cada espiral.",
+          "Sumar las mitades de jitomate cherry y las perlas de queso mozzarella.",
+          "Espolvorear nueces tostadas antes de servir."
+        ]
+      },
+      {
+        id: "pasta-02",
+        nombre: "Pasta Orzo estilo Griego con Pepino y Feta",
+        categoria: "Pastas",
+        icono: "🌾",
+        proteina: "Pasta",
+        estacion: "Verano",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2 tazas de pasta orzo (forma de granos de arroz) cocida y fría",
+          "1 pepino en cubitos pequeños",
+          "1 taza de jitomate picado",
+          "80 g de queso feta desmoronado",
+          "2 cdas. de eneldo fresco picado",
+          "1/4 cebolla morada picada fino"
+        ],
+        aderezo: {
+          nombre: "Vinagreta de Limón Amarillo y Orégano Griego",
+          ingredientes: [
+            "4 cdas. de aceite de oliva virgen",
+            "Jugo de 1 limón amarillo grande",
+            "1/2 cdta. de orégano seco molido",
+            "Sal de mar y pimienta blanca"
+          ],
+          preparacion: "Batir el jugo de limón con el orégano y la sal; agregar el aceite en hilo batiendo con tenedor."
+        },
+        preparacion: [
+          "Dejar enfriar totalmente el orzo cocido.",
+          "Mezclar el orzo con el pepino picado, jitomate, cebolla morada y eneldo.",
+          "Verter la vinagreta de limón y revolver.",
+          "Finalizar desmoronando el queso feta por encima."
+        ]
+      },
+      {
+        id: "pasta-03",
+        nombre: "Coditos Hawaianos con Piña Asada y Jamón",
+        categoria: "Pastas",
+        icono: "🍍",
+        proteina: "Pasta",
+        estacion: "Verano",
+        tendencia: "Clásica Internacional",
         tiempo: "20 min",
         porciones: "4 porciones",
+        costo: "Económico",
         ingredientes: [
-          "250 g de pasta de codito cocida al dente y enfriada",
-          "150 g de jamón de pavo cortado en cubos de 1 cm",
-          "1 taza de piña natural asada al comal cortada en cubitos",
-          "2 ramas de apio limpio finamente rebanadas",
-          "1/4 taza de nuez picada tostada"
+          "250 g de pasta de codito cocida al dente y fría",
+          "150 g de jamón de pavo en cubitos regulares",
+          "1 taza de piña natural asada en comal cortada en cubitos",
+          "2 ramas de apio finamente picadas",
+          "1/4 taza de nuez tostada picada"
         ],
         aderezo: {
-          nombre: "Aderezo Agridulce de Piña y Crema",
+          nombre: "Aderezo Agridulce de Crema y Piña",
           ingredientes: [
             "3 cdas. de crema ácida de rancho",
             "2 cdas. de mayonesa",
-            "2 cdas. de jugo colado de la piña asada",
-            "1 pizca de sal fina y pimienta blanca"
+            "2 cdas. de jugo colado de la piña",
+            "Pizca de sal fina y pimienta blanca"
           ],
-          preparacion: "Mezclar en un tazón la crema con la mayonesa y el jugo de piña hasta que quede suave y ligeramente cremosa."
+          preparacion: "Batir la crema con la mayonesa y el jugo de piña hasta que quede lisa y sedosa."
         },
         preparacion: [
-          "Asar las rebanadas de piña en comal hasta que tomen marcas doradas; picar en dados y reservar.",
-          "Cocer los coditos al dente, enfriar y escurrir.",
-          "Mezclar la pasta con los cubos de jamón de pavo, los dados de piña asada y el apio fresco.",
-          "Integrar el aderezo agridulce y envolver con espátula de silicón.",
-          "Espolvorear nuez tostada y refrigerar durante 30 minutos antes de disfrutar."
+          "Asar rebanadas de piña en sartén hasta dorar levemente; picar en cubitos.",
+          "Unir los coditos fríos con el jamón, la piña asada y el apio fresco.",
+          "Integrar el aderezo agridulce y mezclar con espátula.",
+          "Decorar con nuez tostada y refrigerar 25 minutos."
         ]
       },
       {
-        id: "ens-14",
-        nombre: "Ensalada de Tres Frijoles con Maíz Dorado y Cilantro",
-        categoria: "Campirana Nutritiva",
-        icono: "🫘",
-        estacion: "Verano",
-        proteina: "Garbanzo/Legumbre",
-        tiempo: "15 min",
-        porciones: "5 porciones",
-        ingredientes: [
-          "1 taza de frijol negro cocido y escurrido",
-          "1 taza de frijol pinto cocido y escurrido",
-          "1 taza de garbanzo o haba verde cocida y escurrida",
-          "1 taza de granos de elote tierno asados al sartén",
-          "1 pimiento rojo picado en cubos pequeños",
-          "1/2 taza de cilantro fresco picado"
-        ],
-        aderezo: {
-          nombre: "Vinagreta de Limón, Miel y Comino",
-          ingredientes: [
-            "5 cdas. de aceite de oliva o maíz",
-            "Jugo de 2 limones grandes",
-            "1 cdta. de miel de abeja",
-            "1/2 cdta. de comino molido",
-            "Sal de mar y pimienta"
-          ],
-          preparacion: "Disolver la miel y la sal en el jugo de limón con un tenedor; incorporar el comino y batir con el aceite hasta que se emulsione."
-        },
-        preparacion: [
-          "Enjuagar y escurrir las tres legumbres de modo que queden limpias y secas.",
-          "Juntar en un recipiente amplio los frijoles negros, pintos y garbanzos con el elote dorado y el pimiento.",
-          "Bañar con la vinagreta emulsionada.",
-          "Incorporar el cilantro fresco y reposar 15 minutos en refrigerador para que las legumbres absorban el aliño.",
-          "Servir sola o como guarnición rica en proteína vegetal y fibra."
-        ]
-      },
-      {
-        id: "ens-15",
-        nombre: "Coleslaw Bicolor con Manzana Criolla y Cacahuate",
-        categoria: "Crujífera de Invierno",
-        icono: "🥗",
-        estacion: "Invierno",
-        proteina: "Germen/Semillas",
-        tiempo: "15 min",
-        porciones: "4 porciones",
-        ingredientes: [
-          "2 tazas de col blanca fileteada muy fina en mandolina",
-          "1.5 tazas de col morada en juliana delgada",
-          "1 zanahoria grande rallada en tiras largas",
-          "1 manzana roja criolla con cáscara en bastones",
-          "1/2 taza de cacahuates tostados partidos a la mitad"
-        ],
-        aderezo: {
-          nombre: "Aderezo Cremoso de Vinagre de Manzana y Mostaza",
-          ingredientes: [
-            "3 cdas. de crema ácida",
-            "2 cdas. de mayonesa",
-            "1.5 cdas. de vinagre de manzana orgánico",
-            "1 cdta. de miel o azúcar mascabado",
-            "Sal fina y pimienta negra molida"
-          ],
-          preparacion: "Batir en un cuenco la crema, mayonesa, vinagre de manzana, miel y sal hasta que el azúcar se disuelva por completo."
-        },
-        preparacion: [
-          "Frotar la col blanca y morada con una pizca de sal con las manos limpias durante 1 minuto para suavizar su fibra sin perder lo crujiente.",
-          "Añadir la zanahoria rallada y los bastones de manzana.",
-          "Verter el aderezo cremoso sobre los vegetales.",
-          "Mezclar muy bien con dos cucharas hasta que toda la col quede impregnada uniformemente.",
-          "Espolvorear los cacahuates tostados al momento de servir para mantenerlos crocantes."
-        ]
-      },
-      {
-        id: "ens-16",
-        nombre: "Pasta Orzo con Salmón al Horno y Eneldo Fresco",
-        categoria: "Gourmet Marina",
-        icono: "🐟",
-        estacion: "Primavera",
-        proteina: "Atún/Pescado",
-        tiempo: "22 min",
+        id: "pasta-04",
+        nombre: "Buddha Bowl de Quinoa Real con Camote y Cúrcuma",
+        categoria: "Granos",
+        icono: "🍠",
+        proteina: "Vegetariana",
+        estacion: "Otoño",
+        tendencia: "Bistro Gourmet",
+        tiempo: "25 min",
         porciones: "3 porciones",
+        costo: "Económico",
         ingredientes: [
-          "2 tazas de pasta orzo (forma de grano de arroz) cocida al dente",
-          "200 g de filete de salmón asado a la plancha desmenuzado en lascas",
-          "1 pepino persa picado en cubos finos",
-          "1/2 taza de queso feta o panela en cubos",
-          "2 cdas. de alcaparras baby escurridas",
-          "2 cdas. de eneldo fresco finamente picado"
+          "1.5 tazas de quinoa cocida tibia o fría",
+          "1 camote mediano en cubos horneado con aceite y sal",
+          "1 taza de col morada en juliana fina",
+          "1 taza de espinacas tiernas crudas",
+          "1/2 aguacate en láminas",
+          "2 cdas. de semillas de ajonjolí tostado"
         ],
         aderezo: {
-          nombre: "Vinagreta de Limón Amarillo y Aceite de Oliva",
+          nombre: "Aderezo Dorado de Tahini, Limón y Cúrcuma",
+          ingredientes: [
+            "3 cdas. de pasta de tahini puro",
+            "3 cdas. de agua tibia",
+            "Jugo de 1 limón verde",
+            "1/4 cdta. de cúrcuma en polvo",
+            "Sal de grano"
+          ],
+          preparacion: "Batir el tahini con el agua tibia y el limón hasta que aclare; sumar la cúrcuma y sal hasta obtener una crema amarilla fluida."
+        },
+        preparacion: [
+          "En un bowl amplio disponer por separado: la quinoa, los cubos de camote horneado, la col morada, espinaca y aguacate.",
+          "Rociar el aderezo dorado sobre todos los componentes.",
+          "Espolvorear con ajonjolí tostado y consumir templado."
+        ]
+      },
+
+      // --- BLOQUE 7: PROTEÍNA - GERMINADOS, BROTES Y QUESOS ---
+      {
+        id: "germen-01",
+        nombre: "Germen de Alfalfa con Aguacate, Panela y Girasol",
+        categoria: "Germinados",
+        icono: "🌱",
+        proteina: "Queso/Semillas",
+        estacion: "Primavera",
+        tendencia: "Regional Bajío",
+        tiempo: "10 min",
+        porciones: "2 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2.5 tazas de germen de alfalfa fresco y esponjoso",
+          "1 aguacate grande cortado en cubos medianos",
+          "100 g de queso panela fresco en cubitos",
+          "1 taza de jitomate saladette picado sin semillas",
+          "3 cdas. de semillas de girasol peladas y tostadas en comal"
+        ],
+        aderezo: {
+          nombre: "Aliño de Limón Verde y Orégano Casero",
+          ingredientes: [
+            "4 cdas. de aceite de oliva o maíz",
+            "Jugo colado de 2 limones agrios",
+            "1/2 cdta. de orégano seco molido",
+            "Sal marina al gusto"
+          ],
+          preparacion: "Batir con tenedor el jugo de limón con la sal y orégano seco; agregar el aceite poco a poco batiendo."
+        },
+        preparacion: [
+          "Formar un colchón suave con el germen de alfalfa bien escurrido en el plato.",
+          "Repartir por encima los cubos de jitomate y queso panela.",
+          "Acomodar los cubos de aguacate.",
+          "Rociar el aliño al orégano sobre toda la superficie y terminar con las semillas de girasol tostadas."
+        ]
+      },
+      {
+        id: "germen-02",
+        nombre: "Germen de Soya Salteado al Wok con Cacahuates",
+        categoria: "Germinados",
+        icono: "🥢",
+        proteina: "Queso/Semillas",
+        estacion: "Todo el año",
+        tendencia: "Clásica Internacional",
+        tiempo: "10 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "3 tazas de germen de soya fresco muy limpio",
+          "1 zanahoria cortada en juliana delgada",
+          "1 pimiento rojo en tiras finas",
+          "2 cebollines rebanados al sesgo",
+          "1/2 taza de cacahuates tostados enteros"
+        ],
+        aderezo: {
+          nombre: "Salsa Ligera de Soya y Sésamo",
+          ingredientes: [
+            "2.5 cdas. de salsa de soya clara",
+            "1 cdta. de aceite de ajonjolí tostado",
+            "1 cda. de vinagre de arroz",
+            "1/2 cdta. de azúcar y una pizca de chile quebrado"
+          ],
+          preparacion: "Mezclar en un tazón los líquidos hasta disolver el azúcar."
+        },
+        preparacion: [
+          "Saltear el germen de soya con la zanahoria y pimiento en sartén muy caliente con unas gotas de aceite durante solo 45 segundos (debe quedar supercrocante).",
+          "Retirar del fuego de inmediato.",
+          "Verter la salsa ligera de soya y sésamo y mezclar.",
+          "Servir en una fuente con los cacahuates tostados por encima."
+        ]
+      },
+      {
+        id: "germen-03",
+        nombre: "Carpaccio de Calabacitas Crudas con Parmesano",
+        categoria: "Vegetariana",
+        icono: "🥒",
+        proteina: "Queso/Semillas",
+        estacion: "Primavera",
+        tendencia: "Bistro Gourmet",
+        tiempo: "10 min",
+        porciones: "3 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "3 calabacitas tiernas rebanadas finísimas con pelador de papas",
+          "40 g de queso parmesano o cotija curado en lajas delgadas",
+          "Hojas de albahaca fresca entera",
+          "2 cdas. de piñones o almendras tostadas"
+        ],
+        aderezo: {
+          nombre: "Aliño Cítrico de Limón Amarillo y Oliva",
           ingredientes: [
             "4 cdas. de aceite de oliva virgen extra",
-            "Jugo de 1 limón amarillo grande",
-            "Ralladura fina de 1/2 limón amarillo",
-            "Sal marina y pimienta blanca"
+            "Jugo de 1 limón amarillo colado",
+            "Sal en escamas y pimienta negra molida"
           ],
-          preparacion: "Batir el jugo y ralladura de limón con la sal y pimienta; agregar el aceite de oliva batiendo con tenedor hasta que aclare ligeramente."
+          preparacion: "Emulsionar con tenedor el jugo de limón con la sal y el aceite de oliva."
         },
         preparacion: [
-          "Cocinar el salmón en sartén con una gota de aceite por 3 minutos por lado; separar en lascas grandes con un tenedor.",
-          "Mezclar la pasta orzo fría con el pepino, las alcaparras y el eneldo fresco.",
-          "Bañar con la vinagreta cítrica de limón amarillo.",
-          "Incorporar suavemente las lascas de salmón y el queso feta para no deshacer el pescado.",
-          "Servir inmediatamente o guardar refrigerada."
+          "Extender las láminas delgadas de calabacita superpuestas en un platón plano.",
+          "Rociar de inmediato el aliño de limón para curar y ablandar ligeramente la calabacita.",
+          "Distribuir las lajas de queso parmesano y las hojas de albahaca.",
+          "Terminar con las almendras tostadas picadas."
+        ]
+      },
+      {
+        id: "germen-04",
+        nombre: "Ensalada Waldorf Clásica con Manzana y Nuez",
+        categoria: "Clásicas",
+        icono: "🍏",
+        proteina: "Queso/Semillas",
+        estacion: "Otoño",
+        tendencia: "Clásica Internacional",
+        tiempo: "15 min",
+        porciones: "4 porciones",
+        costo: "Económico",
+        ingredientes: [
+          "2 manzanas verdes Granny Smith en cubos medianos",
+          "2 ramas de apio limpio en rodajitas finas",
+          "1/2 taza de nueces de castilla tostadas y troceadas",
+          "1/2 taza de uvas rojas partidas a la mitad sin semillas",
+          "Hojas de lechuga francesa para la base"
+        ],
+        aderezo: {
+          nombre: "Aderezo Waldorf de Yogur y Mayonesa",
+          ingredientes: [
+            "3 cdas. de yogur griego natural",
+            "2 cdas. de mayonesa",
+            "1 cdta. de jugo de limón",
+            "1 pizca de sal y 1/2 cdta. de miel"
+          ],
+          preparacion: "Batir la mayonesa con el yogur, jugo de limón, sal y miel hasta lograr consistencia untuosa."
+        },
+        preparacion: [
+          "Rociar las manzanas cortadas con unas gotas de limón para evitar oxidación.",
+          "En un cuenco mezclar la manzana con el apio, uvas y nueces.",
+          "Incorporar el aderezo cremoso suavemente.",
+          "Servir frío sobre una cama de lechuga francesa."
         ]
       }
     ];
 
     /* ==========================================================================
-       2. GESTIÓN DEL ESTADO DE LA APLICACIÓN
+       GESTIÓN DEL ESTADO REACTIVO DE LA APLICACIÓN
        ========================================================================== */
     const AppState = {
-      season: "Todas",
-      protein: "Todas",
+      currentTab: "explore", // explore | favorites | grocery
+      selectedProtein: "Todas",
+      selectedTheme: "Todas",
       searchQuery: "",
-      onlyFavorites: false,
-      favorites: JSON.parse(localStorage.getItem("ensaladas_favs") || "[]"),
+      favorites: JSON.parse(localStorage.getItem("ensaladas_favs_v2") || "[]"),
+      groceryList: JSON.parse(localStorage.getItem("ensaladas_grocery_v2") || "[]"),
       activeRecipeId: null
     };
 
-    // Elementos del DOM
+    // Referencias DOM
     const recipesGrid = document.getElementById("recipes-grid");
+    const favoritesGrid = document.getElementById("favorites-grid");
+    const groceryItemsList = document.getElementById("grocery-items-list");
     const emptyState = document.getElementById("empty-state");
-    const recipeCounter = document.getElementById("recipe-counter");
+    const favoritesEmpty = document.getElementById("favorites-empty");
+    const groceryEmpty = document.getElementById("grocery-empty");
+    const resultsCount = document.getElementById("results-count");
     const searchInput = document.getElementById("search-input");
-    const searchClear = document.getElementById("search-clear");
-    const btnToggleFavs = document.getElementById("btn-toggle-favs");
-    const favsBadge = document.getElementById("favs-badge");
-    const btnResetFilters = document.getElementById("btn-reset-filters");
+    const searchClearBtn = document.getElementById("search-clear-btn");
+    const navFavsBadge = document.getElementById("nav-favs-count-badge");
+    const tabFavsBadge = document.getElementById("tab-favs-badge");
+    const tabGroceryBadge = document.getElementById("tab-grocery-badge");
+    const btnClearAllFilters = document.getElementById("btn-clear-all-filters");
+    const toastMsg = document.getElementById("toast-msg");
 
-    // Elementos del Modal
+    // Modal DOM
     const recipeModal = document.getElementById("recipe-modal");
     const modalCard = document.getElementById("modal-card");
     const modalCloseBtn = document.getElementById("modal-close-btn");
@@ -873,70 +1911,166 @@
     const modalFavIcon = document.getElementById("modal-fav-icon");
     const modalIcon = document.getElementById("modal-icon");
     const modalTitle = document.getElementById("modal-title");
-    const modalSeasonBadge = document.getElementById("modal-season-badge");
+    const modalThemeBadge = document.getElementById("modal-theme-badge");
     const modalProteinBadge = document.getElementById("modal-protein-badge");
     const modalTime = document.getElementById("modal-time");
     const modalServings = document.getElementById("modal-servings");
+    const modalCost = document.getElementById("modal-cost");
+    const modalSeasonTag = document.getElementById("modal-season-tag");
     const modalIngredientsList = document.getElementById("modal-ingredients-list");
     const modalDressingName = document.getElementById("modal-dressing-name");
     const modalDressingIngredients = document.getElementById("modal-dressing-ingredients");
     const modalDressingPrep = document.getElementById("modal-dressing-prep");
     const modalPrepSteps = document.getElementById("modal-prep-steps");
+    const btnAddRecipeToGrocery = document.getElementById("btn-add-recipe-to-grocery");
     const btnCopyRecipe = document.getElementById("btn-copy-recipe");
-    const toastMsg = document.getElementById("toast-msg");
 
     /* ==========================================================================
-       3. FUNCIONES DE RENDERIZADO Y FILTRADO
+       SISTEMA DE NOTIFICACIONES (TOAST)
        ========================================================================== */
-    function updateBadgeCount() {
-      favsBadge.textContent = AppState.favorites.length;
-      if (AppState.onlyFavorites) {
-        btnToggleFavs.classList.add("bg-red-500", "border-red-400");
-      } else {
-        btnToggleFavs.classList.remove("bg-red-500", "border-red-400");
-      }
-    }
-
     function showToast(text) {
       toastMsg.textContent = text;
       toastMsg.classList.remove("opacity-0", "pointer-events-none");
       setTimeout(() => {
         toastMsg.classList.add("opacity-0", "pointer-events-none");
-      }, 2400);
+      }, 2300);
     }
 
-    function getFilteredRecipes() {
+    /* ==========================================================================
+       NAVEGACIÓN ENTRE PESTAÑAS (TABS)
+       ========================================================================== */
+    function switchTab(tabId) {
+      AppState.currentTab = tabId;
+      document.getElementById("view-explore").classList.toggle("hidden", tabId !== "explore");
+      document.getElementById("view-favorites").classList.toggle("hidden", tabId !== "favorites");
+      document.getElementById("view-grocery").classList.toggle("hidden", tabId !== "grocery");
+      document.getElementById("filters-container").classList.toggle("hidden", tabId !== "explore");
+
+      // Actualizar estilos botones nav
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.remove("text-olive-800", "font-bold");
+        btn.classList.add("text-stone-400", "font-medium");
+      });
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add("text-olive-800", "font-bold");
+        activeBtn.classList.remove("text-stone-400", "font-medium");
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabId === "favorites") renderFavorites();
+      if (tabId === "grocery") renderGrocery();
+    }
+
+    document.getElementById("quick-favs-badge-btn").onclick = () => switchTab('favorites');
+
+    /* ==========================================================================
+       FILTRADO Y BÚSQUEDA
+       ========================================================================== */
+    function getFilteredList() {
       const q = AppState.searchQuery.toLowerCase().trim();
-      return RECETAS_DB.filter(r => {
-        // Filtro por favoritos
-        if (AppState.onlyFavorites && !AppState.favorites.includes(r.id)) return false;
+      return RECETAS_DB.filter(item => {
+        // Filtro por Proteína
+        if (AppState.selectedProtein !== "Todas") {
+          if (AppState.selectedProtein === "Vegetariana") {
+            if (item.proteina !== "Vegetariana") return false;
+          } else if (item.proteina !== AppState.selectedProtein) {
+            return false;
+          }
+        }
 
-        // Filtro por estación
-        if (AppState.season !== "Todas" && r.estacion !== AppState.season) return false;
+        // Filtro por Tema / Origen / Temporada
+        if (AppState.selectedTheme !== "Todas") {
+          if (AppState.selectedTheme === "Viral") {
+            if (item.tendencia !== "Viral YouTube/TikTok") return false;
+          } else if (AppState.selectedTheme === "Bajio") {
+            if (item.tendencia !== "Bajío/Regional") return false;
+          } else {
+            // Estación
+            if (item.estacion !== AppState.selectedTheme && item.estacion !== "Todo el año") return false;
+          }
+        }
 
-        // Filtro por proteína
-        if (AppState.protein !== "Todas" && r.proteina !== AppState.protein) return false;
-
-        // Filtro por buscador
+        // Búsqueda en texto completo
         if (q !== "") {
-          const matchName = r.nombre.toLowerCase().includes(q);
-          const matchProtein = r.proteina.toLowerCase().includes(q);
-          const matchCategory = r.categoria.toLowerCase().includes(q);
-          const matchIngredients = r.ingredientes.some(i => i.toLowerCase().includes(q));
-          const matchDressing = r.aderezo.nombre.toLowerCase().includes(q) || r.aderezo.ingredientes.some(di => di.toLowerCase().includes(q));
-          if (!matchName && !matchProtein && !matchCategory && !matchIngredients && !matchDressing) return false;
+          const inTitle = item.nombre.toLowerCase().includes(q);
+          const inProtein = item.proteina.toLowerCase().includes(q);
+          const inDressing = item.aderezo.nombre.toLowerCase().includes(q) || item.aderezo.ingredientes.some(di => di.toLowerCase().includes(q));
+          const inIngs = item.ingredientes.some(i => i.toLowerCase().includes(q));
+          if (!inTitle && !inProtein && !inDressing && !inIngs) return false;
         }
 
         return true;
       });
     }
 
-    function renderRecipes() {
-      const list = getFilteredRecipes();
-      recipesGrid.innerHTML = "";
-      updateBadgeCount();
+    function createRecipeCard(r) {
+      const isFav = AppState.favorites.includes(r.id);
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-3xl p-4 border border-stone-200/90 shadow-xs hover:shadow-md transition active:scale-[0.99] flex flex-col justify-between cursor-pointer";
+      card.onclick = () => openModal(r.id);
 
-      recipeCounter.textContent = `${list.length} receta${list.length === 1 ? '' : 's'} disponible${list.length === 1 ? '' : 's'}`;
+      card.innerHTML = `
+        <div>
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="text-3xl p-1.5 bg-warm-50 rounded-2xl border border-warm-100">${r.icono}</span>
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-olive-50 text-olive-800 border border-olive-200/70">${r.proteina}</span>
+                <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/60 ml-1">${r.estacion}</span>
+              </div>
+            </div>
+            <button 
+              class="card-fav-btn p-2 rounded-full hover:bg-stone-100 active:scale-90 transition text-stone-300 ${isFav ? 'text-red-500 fill-current' : ''}" 
+              data-id="${r.id}"
+              title="Favorito"
+            >
+              <svg class="w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : 'text-stone-300'}" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <h3 class="text-sm font-bold text-stone-900 mt-2.5 leading-snug line-clamp-2">${r.nombre}</h3>
+          
+          <div class="mt-2.5 bg-dressing-50/80 p-2 rounded-xl border border-dressing-200">
+            <p class="text-[11px] font-semibold text-dressing-800 truncate">
+              🫙 ${r.aderezo.nombre}
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
+          <span class="flex items-center space-x-1">
+            <span>⏱️ ${r.tiempo}</span>
+            <span class="text-stone-300">•</span>
+            <span class="text-emerald-700 font-semibold">${r.costo}</span>
+          </span>
+          <span class="text-olive-700 font-bold flex items-center space-x-0.5">
+            <span>Ver receta</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      `;
+
+      card.querySelector(".card-fav-btn").onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(r.id);
+      };
+
+      return card;
+    }
+
+    function renderExplore() {
+      const list = getFilteredList();
+      recipesGrid.innerHTML = "";
+      updateBadges();
+
+      resultsCount.textContent = `Mostrando ${list.length} de ${RECETAS_DB.length} recetas`;
+      
+      const hasFilters = AppState.selectedProtein !== "Todas" || AppState.selectedTheme !== "Todas" || AppState.searchQuery !== "";
+      btnClearAllFilters.classList.toggle("hidden", !hasFilters);
 
       if (list.length === 0) {
         emptyState.classList.remove("hidden");
@@ -947,102 +2081,56 @@
       emptyState.classList.add("hidden");
       recipesGrid.classList.remove("hidden");
 
-      list.forEach(r => {
-        const isFav = AppState.favorites.includes(r.id);
-        const card = document.createElement("div");
-        card.className = "bg-white rounded-2xl p-4 border border-stone-200/90 shadow-xs hover:shadow-md transition active:scale-99 flex flex-col justify-between cursor-pointer";
-        card.onclick = () => openModal(r.id);
+      list.forEach(r => recipesGrid.appendChild(createRecipeCard(r)));
+    }
 
-        card.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <span class="text-3xl p-1.5 bg-stone-50 rounded-xl border border-stone-100">${r.icono}</span>
-                <div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-50 text-brand-800 border border-brand-200">${r.estacion}</span>
-                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 ml-1">${r.proteina}</span>
-                </div>
-              </div>
-              <button 
-                class="card-fav-btn p-2 rounded-full hover:bg-stone-100 active:scale-90 transition text-stone-300 ${isFav ? 'text-red-500 fill-current' : ''}" 
-                data-id="${r.id}"
-                title="${isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : 'text-stone-300'}" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                </svg>
-              </button>
-            </div>
+    function renderFavorites() {
+      favoritesGrid.innerHTML = "";
+      const favList = RECETAS_DB.filter(r => AppState.favorites.includes(r.id));
+      
+      if (favList.length === 0) {
+        favoritesEmpty.classList.remove("hidden");
+        favoritesGrid.classList.add("hidden");
+        return;
+      }
 
-            <h3 class="text-sm font-bold text-stone-900 mt-3 leading-snug line-clamp-2">${r.nombre}</h3>
-            
-            <div class="mt-2.5 bg-dressing-50/70 p-2 rounded-xl border border-dressing-500/20">
-              <p class="text-[11px] font-semibold text-dressing-800 truncate">
-                🫙 ${r.aderezo.nombre}
-              </p>
-            </div>
-          </div>
-
-          <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-medium">
-            <span>⏱️ ${r.tiempo}</span>
-            <span class="text-brand-700 font-semibold flex items-center space-x-1">
-              <span>Ver receta</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        `;
-
-        // Botón de favorito en la tarjeta (detener propagación para no abrir modal)
-        const favBtn = card.querySelector(".card-fav-btn");
-        favBtn.onclick = (e) => {
-          e.stopPropagation();
-          toggleFavorite(r.id);
-        };
-
-        recipesGrid.appendChild(card);
-      });
+      favoritesEmpty.classList.add("hidden");
+      favoritesGrid.classList.remove("hidden");
+      favList.forEach(r => favoritesGrid.appendChild(createRecipeCard(r)));
     }
 
     /* ==========================================================================
-       4. GESTIÓN DE FAVORITOS
+       GESTIÓN DE FAVORITOS
        ========================================================================== */
     function toggleFavorite(id) {
       const idx = AppState.favorites.indexOf(id);
       if (idx > -1) {
         AppState.favorites.splice(idx, 1);
-        showToast("Eliminada de tus favoritos");
+        showToast("Eliminada de tus favoritas");
       } else {
         AppState.favorites.push(id);
-        showToast("¡Guardada en favoritos!");
+        showToast("¡Receta guardada en favoritas!");
       }
-      localStorage.setItem("ensaladas_favs", JSON.stringify(AppState.favorites));
-      renderRecipes();
-      if (AppState.activeRecipeId === id) {
-        updateModalFavButton(id);
-      }
+      localStorage.setItem("ensaladas_favs_v2", JSON.stringify(AppState.favorites));
+      updateBadges();
+      renderExplore();
+      if (AppState.currentTab === "favorites") renderFavorites();
+      if (AppState.activeRecipeId === id) updateModalFavButton(id);
     }
 
-    function updateModalFavButton(id) {
-      const isFav = AppState.favorites.includes(id);
-      if (isFav) {
-        modalFavBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500 fill-current" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-          </svg>
-        `;
-      } else {
-        modalFavBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        `;
-      }
+    function updateBadges() {
+      const count = AppState.favorites.length;
+      navFavsBadge.textContent = count;
+      tabFavsBadge.textContent = count;
+      tabFavsBadge.classList.toggle("hidden", count === 0);
+
+      const groceryCount = AppState.groceryList.filter(i => !i.checked).length;
+      tabGroceryBadge.textContent = groceryCount;
+      tabGroceryBadge.classList.toggle("hidden", groceryCount === 0);
     }
 
     /* ==========================================================================
-       5. MODAL DE RECETA Y CHECKLIST INTERACTIVO
+       MODAL DE DETALLE Y CHECKLIST POR RECETA
        ========================================================================== */
     function openModal(id) {
       const r = RECETAS_DB.find(item => item.id === id);
@@ -1051,21 +2139,23 @@
 
       modalIcon.textContent = r.icono;
       modalTitle.textContent = r.nombre;
-      modalSeasonBadge.textContent = r.estacion;
+      modalThemeBadge.textContent = r.tendencia;
       modalProteinBadge.textContent = r.proteina;
       modalTime.textContent = r.tiempo;
       modalServings.textContent = r.porciones;
+      modalCost.textContent = r.costo;
+      modalSeasonTag.textContent = `Época: ${r.estacion}`;
 
-      // Cargar lista de ingredientes con estado tachado en localStorage
-      const savedChecked = JSON.parse(localStorage.getItem(`checked_${r.id}`) || "[]");
+      // Checkboxes de ingredientes base
+      const savedChecks = JSON.parse(localStorage.getItem(`checked_v2_${r.id}`) || "[]");
       modalIngredientsList.innerHTML = "";
       r.ingredientes.forEach((ing, index) => {
-        const isChecked = savedChecked.includes(index);
+        const isChecked = savedChecks.includes(index);
         const li = document.createElement("li");
-        li.className = "flex items-start space-x-2.5 cursor-pointer py-1 select-none";
+        li.className = "flex items-start space-x-2.5 py-1 select-none cursor-pointer";
         li.innerHTML = `
-          <input type="checkbox" id="ing-${index}" ${isChecked ? 'checked' : ''} class="mt-0.5 rounded border-stone-300 text-brand-700 focus:ring-brand-600 h-4 w-4">
-          <label for="ing-${index}" class="text-xs ${isChecked ? 'line-through text-stone-400' : 'text-stone-700'} leading-relaxed flex-1 cursor-pointer">
+          <input type="checkbox" id="ing-chk-${index}" ${isChecked ? 'checked' : ''} class="mt-0.5 rounded border-stone-300 text-olive-700 focus:ring-olive-600 h-4 w-4">
+          <label for="ing-chk-${index}" class="text-xs ${isChecked ? 'line-through text-stone-400' : 'text-stone-700'} leading-relaxed flex-1 cursor-pointer">
             ${ing}
           </label>
         `;
@@ -1073,7 +2163,7 @@
         const chk = li.querySelector("input");
         const lbl = li.querySelector("label");
         chk.onchange = () => {
-          let list = JSON.parse(localStorage.getItem(`checked_${r.id}`) || "[]");
+          let list = JSON.parse(localStorage.getItem(`checked_v2_${r.id}`) || "[]");
           if (chk.checked) {
             lbl.classList.add("line-through", "text-stone-400");
             lbl.classList.remove("text-stone-700");
@@ -1083,38 +2173,56 @@
             lbl.classList.add("text-stone-700");
             list = list.filter(i => i !== index);
           }
-          localStorage.setItem(`checked_${r.id}`, JSON.stringify(list));
+          localStorage.setItem(`checked_v2_${r.id}`, JSON.stringify(list));
         };
         modalIngredientsList.appendChild(li);
       });
 
-      // Llenar sección del aderezo
+      // Aderezo
       modalDressingName.textContent = r.aderezo.nombre;
       modalDressingIngredients.innerHTML = r.aderezo.ingredientes.map(di => `<li>${di}</li>`).join("");
       modalDressingPrep.textContent = r.aderezo.preparacion;
 
-      // Llenar pasos de preparación
+      // Pasos
       modalPrepSteps.innerHTML = "";
       r.preparacion.forEach((step, idx) => {
-        const stepLi = document.createElement("li");
-        stepLi.className = "flex items-start space-x-3";
-        stepLi.innerHTML = `
-          <span class="w-5 h-5 rounded-full bg-brand-700 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+        const li = document.createElement("li");
+        li.className = "flex items-start space-x-3";
+        li.innerHTML = `
+          <span class="w-5 h-5 rounded-full bg-olive-700 text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
             ${idx + 1}
           </span>
           <p class="text-xs text-stone-700 leading-relaxed flex-1">${step}</p>
         `;
-        modalPrepSteps.appendChild(stepLi);
+        modalPrepSteps.appendChild(li);
       });
 
-      // Configurar botón favorito del modal
+      // Botón Súper desde la receta
+      btnAddRecipeToGrocery.onclick = () => {
+        let added = 0;
+        r.ingredientes.forEach(ing => {
+          if (!AppState.groceryList.some(item => item.text.toLowerCase() === ing.toLowerCase())) {
+            AppState.groceryList.push({ id: Date.now() + Math.random(), text: ing, checked: false });
+            added++;
+          }
+        });
+        r.aderezo.ingredientes.forEach(di => {
+          if (!AppState.groceryList.some(item => item.text.toLowerCase() === di.toLowerCase())) {
+            AppState.groceryList.push({ id: Date.now() + Math.random(), text: `${di} (${r.aderezo.nombre})`, checked: false });
+            added++;
+          }
+        });
+        saveGrocery();
+        showToast(`¡Se añadieron ${added} ingredientes a tu Lista del Súper!`);
+      };
+
+      // Copiar al portapapeles
+      btnCopyRecipe.onclick = () => copyRecipeToClipboard(r);
+
       updateModalFavButton(r.id);
       modalFavBtn.onclick = () => toggleFavorite(r.id);
 
-      // Configurar botón de copiar
-      btnCopyRecipe.onclick = () => copyRecipeText(r);
-
-      // Mostrar modal con animación fluida
+      // Mostrar modal animado
       recipeModal.classList.remove("hidden");
       setTimeout(() => {
         recipeModal.classList.remove("opacity-0");
@@ -1130,7 +2238,7 @@
         recipeModal.classList.add("hidden");
         document.body.style.overflow = "auto";
         AppState.activeRecipeId = null;
-      }, 250);
+      }, 240);
     }
 
     modalCloseBtn.onclick = closeModal;
@@ -1138,126 +2246,191 @@
       if (e.target === recipeModal) closeModal();
     };
 
-    /* ==========================================================================
-       6. COPIADO DE RECETA AL PORTAPAPELES
-       ========================================================================== */
-    function copyRecipeText(r) {
-      const textToCopy = `*${r.nombre}* (${r.estacion} | ${r.proteina})\n` +
-        `⏱️ Tiempo: ${r.tiempo} | 👥 ${r.porciones}\n\n` +
-        `🛒 *Ingredientes:*\n${r.ingredientes.map(i => `• ${i}`).join('\n')}\n\n` +
+    function updateModalFavButton(id) {
+      const isFav = AppState.favorites.includes(id);
+      if (isFav) {
+        modalFavIcon.classList.add("text-red-500", "fill-current");
+        modalFavIcon.classList.remove("text-stone-400");
+      } else {
+        modalFavIcon.classList.remove("text-red-500", "fill-current");
+        modalFavIcon.classList.add("text-stone-400");
+      }
+    }
+
+    function copyRecipeToClipboard(r) {
+      const text = `🥗 *${r.nombre}* (${r.proteina} | ${r.estacion})\n` +
+        `⏱️ Tiempo: ${r.tiempo} | 👥 ${r.porciones} | 🏷️ Costo: ${r.costo}\n\n` +
+        `🛒 *Ingredientes Base:*\n${r.ingredientes.map(i => `• ${i}`).join('\n')}\n\n` +
         `🫙 *Aderezo: ${r.aderezo.nombre}*\n` +
         `Ingredientes:\n${r.aderezo.ingredientes.map(di => `• ${di}`).join('\n')}\n` +
         `Emulsión: ${r.aderezo.preparacion}\n\n` +
-        `👨‍🍳 *Preparación:*\n${r.preparacion.map((p, idx) => `${idx + 1}. ${p}`).join('\n')}`;
+        `👨‍🍳 *Preparación:*\n${r.preparacion.map((p, idx) => `${idx + 1}. ${p}`).join('\n')}\n\n` +
+        `_Receta de Ensaladas & Bowls PWA_`;
 
-      // Método estándar y compatible en iframe
-      const dummyArea = document.createElement("textarea");
-      dummyArea.value = textToCopy;
-      document.body.appendChild(dummyArea);
-      dummyArea.select();
+      const dummy = document.createElement("textarea");
+      dummy.value = text;
+      document.body.appendChild(dummy);
+      dummy.select();
       try {
         document.execCommand('copy');
-        showToast("¡Receta copiada al portapapeles!");
+        showToast("¡Receta copiada para compartir!");
       } catch (err) {
         showToast("No se pudo copiar automáticamente");
       }
-      document.body.removeChild(dummyArea);
+      document.body.removeChild(dummy);
     }
 
     /* ==========================================================================
-       7. EVENTOS DE FILTROS Y BÚSQUEDA
+       GESTIÓN DE LA LISTA DEL SÚPER CONSOLIDADA
        ========================================================================== */
-    // Filtros de estación
-    document.querySelectorAll(".season-chip").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".season-chip").forEach(b => {
-          b.classList.remove("bg-brand-800", "text-white", "font-semibold");
-          b.classList.add("bg-stone-100", "text-stone-600", "font-medium");
-        });
-        btn.classList.add("bg-brand-800", "text-white", "font-semibold");
-        btn.classList.remove("bg-stone-100", "text-stone-600", "font-medium");
-        AppState.season = btn.dataset.season;
-        renderRecipes();
-      };
-    });
+    function saveGrocery() {
+      localStorage.setItem("ensaladas_grocery_v2", JSON.stringify(AppState.groceryList));
+      updateBadges();
+      if (AppState.currentTab === "grocery") renderGrocery();
+    }
 
-    // Filtros de proteína
-    document.querySelectorAll(".protein-chip").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".protein-chip").forEach(b => {
-          b.classList.remove("bg-stone-800", "text-white", "font-semibold");
-          b.classList.add("bg-stone-100", "text-stone-600", "font-medium");
-        });
-        btn.classList.add("bg-stone-800", "text-white", "font-semibold");
-        btn.classList.remove("bg-stone-100", "text-stone-600", "font-medium");
-        AppState.protein = btn.dataset.protein;
-        renderRecipes();
-      };
-    });
-
-    // Buscador
-    searchInput.oninput = (e) => {
-      AppState.searchQuery = e.target.value;
-      if (AppState.searchQuery.length > 0) {
-        searchClear.classList.remove("hidden");
-      } else {
-        searchClear.classList.add("hidden");
+    function renderGrocery() {
+      groceryItemsList.innerHTML = "";
+      if (AppState.groceryList.length === 0) {
+        groceryEmpty.classList.remove("hidden");
+        return;
       }
-      renderRecipes();
-    };
+      groceryEmpty.classList.add("hidden");
 
-    searchClear.onclick = () => {
-      searchInput.value = "";
-      AppState.searchQuery = "";
-      searchClear.classList.add("hidden");
-      renderRecipes();
-    };
+      AppState.groceryList.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between py-2.5 px-1";
+        li.innerHTML = `
+          <div class="flex items-center space-x-3 flex-1 select-none cursor-pointer">
+            <input type="checkbox" ${item.checked ? 'checked' : ''} class="rounded border-stone-300 text-olive-700 focus:ring-olive-600 h-4 w-4">
+            <span class="${item.checked ? 'line-through text-stone-400' : 'text-stone-800'} text-xs sm:text-sm font-medium flex-1">${item.text}</span>
+          </div>
+          <button class="text-stone-300 hover:text-red-500 p-1.5 active:scale-90 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        `;
 
-    // Toggle Favoritos
-    btnToggleFavs.onclick = () => {
-      AppState.onlyFavorites = !AppState.onlyFavorites;
-      if (AppState.onlyFavorites) {
-        showToast("Mostrando solo tus recetas favoritas");
-      }
-      renderRecipes();
-    };
+        li.querySelector("input").onchange = (e) => {
+          item.checked = e.target.checked;
+          saveGrocery();
+        };
 
-    // Restablecer filtros
-    btnResetFilters.onclick = () => {
-      AppState.season = "Todas";
-      AppState.protein = "Todas";
-      AppState.searchQuery = "";
-      AppState.onlyFavorites = false;
-      searchInput.value = "";
-      searchClear.classList.add("hidden");
+        li.querySelector("button").onclick = () => {
+          AppState.groceryList = AppState.groceryList.filter(g => g.id !== item.id);
+          saveGrocery();
+          showToast("Producto eliminado");
+        };
 
-      document.querySelectorAll(".season-chip").forEach(b => {
-        b.classList.remove("bg-brand-800", "text-white", "font-semibold");
-        b.classList.add("bg-stone-100", "text-stone-600", "font-medium");
+        groceryItemsList.appendChild(li);
       });
-      document.querySelector('.season-chip[data-season="Todas"]').classList.add("bg-brand-800", "text-white", "font-semibold");
+    }
 
-      document.querySelectorAll(".protein-chip").forEach(b => {
-        b.classList.remove("bg-stone-800", "text-white", "font-semibold");
-        b.classList.add("bg-stone-100", "text-stone-600", "font-medium");
-      });
-      document.querySelector('.protein-chip[data-protein="Todas"]').classList.add("bg-stone-800", "text-white", "font-semibold");
+    // Agregar producto manual al súper
+    document.getElementById("btn-add-custom-grocery").onclick = () => {
+      const input = document.getElementById("grocery-custom-input");
+      const val = input.value.trim();
+      if (!val) return;
+      AppState.groceryList.unshift({ id: Date.now(), text: val, checked: false });
+      input.value = "";
+      saveGrocery();
+      showToast("Producto añadido");
+    };
 
-      renderRecipes();
+    document.getElementById("grocery-custom-input").onkeypress = (e) => {
+      if (e.key === "Enter") document.getElementById("btn-add-custom-grocery").click();
+    };
+
+    // Vaciar lista del súper
+    document.getElementById("btn-clear-grocery").onclick = () => {
+      if (AppState.groceryList.length === 0) return;
+      AppState.groceryList = [];
+      saveGrocery();
+      showToast("Lista del súper vaciada");
     };
 
     /* ==========================================================================
-       8. REGISTRO DINÁMICO DE MANIFEST PWA
+       LISTENERS DE EVENTOS Y BÚSQUEDA
        ========================================================================== */
-    function injectPWAManifest() {
-      const manifestData = {
-        name: "Recetario de Ensaladas y Aderezos",
+    // Chips de Proteína
+    document.querySelectorAll(".chip").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".chip").forEach(b => {
+          b.classList.remove("active", "bg-olive-800", "text-white", "font-semibold");
+          b.classList.add("bg-stone-100", "text-stone-700");
+        });
+        btn.classList.add("active", "bg-olive-800", "text-white", "font-semibold");
+        btn.classList.remove("bg-stone-100", "text-stone-700");
+        AppState.selectedProtein = btn.dataset.protein;
+        renderExplore();
+      };
+    });
+
+    // Chips de Origen / Época
+    document.querySelectorAll(".theme-chip").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".theme-chip").forEach(b => {
+          b.classList.remove("active", "bg-warm-800", "text-white", "font-semibold");
+          b.classList.add("bg-stone-100", "text-stone-700");
+        });
+        btn.classList.add("active", "bg-warm-800", "text-white", "font-semibold");
+        btn.classList.remove("bg-stone-100", "text-stone-700");
+        AppState.selectedTheme = btn.dataset.theme;
+        renderExplore();
+      };
+    });
+
+    // Input buscador
+    searchInput.oninput = (e) => {
+      AppState.searchQuery = e.target.value;
+      searchClearBtn.classList.toggle("hidden", AppState.searchQuery === "");
+      renderExplore();
+    };
+
+    searchClearBtn.onclick = () => {
+      searchInput.value = "";
+      AppState.searchQuery = "";
+      searchClearBtn.classList.add("hidden");
+      renderExplore();
+    };
+
+    // Resetear filtros
+    function resetAllFilters() {
+      AppState.selectedProtein = "Todas";
+      AppState.selectedTheme = "Todas";
+      AppState.searchQuery = "";
+      searchInput.value = "";
+      searchClearBtn.classList.add("hidden");
+
+      document.querySelectorAll(".chip").forEach(b => {
+        b.classList.remove("active", "bg-olive-800", "text-white", "font-semibold");
+        b.classList.add("bg-stone-100", "text-stone-700");
+      });
+      document.querySelector('.chip[data-protein="Todas"]').classList.add("active", "bg-olive-800", "text-white", "font-semibold");
+
+      document.querySelectorAll(".theme-chip").forEach(b => {
+        b.classList.remove("active", "bg-warm-800", "text-white", "font-semibold");
+        b.classList.add("bg-stone-100", "text-stone-700");
+      });
+      document.querySelector('.theme-chip[data-theme="Todas"]').classList.add("active", "bg-warm-800", "text-white", "font-semibold");
+
+      renderExplore();
+    }
+
+    btnClearAllFilters.onclick = resetAllFilters;
+    document.getElementById("btn-reset-empty").onclick = resetAllFilters;
+
+    /* ==========================================================================
+       PWA MANIFEST EMBEBIDO
+       ========================================================================== */
+    function setupManifest() {
+      const manifest = {
+        name: "Ensaladas & Bowls",
         short_name: "Ensaladas",
-        description: "Catálogo estacional de ensaladas con proteínas y aderezos caseros",
+        description: "Recetario de ensaladas virales, del Bajío y aderezos caseros",
         start_url: window.location.href,
         display: "standalone",
-        background_color: "#f5f5f4",
-        theme_color: "#166534",
+        background_color: "#fdfbf7",
+        theme_color: "#2d4527",
         icons: [
           {
             src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>",
@@ -1267,19 +2440,18 @@
           }
         ]
       };
-      const stringManifest = JSON.stringify(manifestData);
-      const blob = new Blob([stringManifest], {type: 'application/json'});
-      const manifestURL = URL.createObjectURL(blob);
-      const linkTag = document.createElement('link');
-      linkTag.rel = 'manifest';
-      linkTag.href = manifestURL;
-      document.head.appendChild(linkTag);
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = URL.createObjectURL(blob);
+      document.head.appendChild(link);
     }
 
-    // Inicialización al cargar la ventana
+    // Inicialización al arrancar
     window.addEventListener("DOMContentLoaded", () => {
-      injectPWAManifest();
-      renderRecipes();
+      setupManifest();
+      renderExplore();
+      updateBadges();
     });
   </script>
 </body>
